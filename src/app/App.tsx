@@ -5,6 +5,7 @@ import { configuredWebAppUrl } from '../config/runtime'
 import { cacheStorefront, loadCachedStorefront, loadCart, saveCart } from '../db/database'
 import { mockStorefront } from '../mock/data'
 import { AppShell } from '../components/AppShell'
+import { StoreLoadingScreen } from '../components/StoreLoadingScreen'
 import { AuthDialog } from '../pages/AuthDialog'
 import { SetupPage } from '../pages/SetupPage'
 import { StorefrontPage, ProductPage } from '../pages/StorePages'
@@ -36,6 +37,7 @@ export default function App() {
   const [activeCartType, setActiveCartType] = useState<ProductType>('READY')
   const [pendingOrder, setPendingOrder] = useState<OrderSummary | null>(null)
   const [toast, setToast] = useState('')
+  const [loadAttempt, setLoadAttempt] = useState(0)
   const api = useMemo(() => endpoint ? new ApiClient(endpoint) : null, [endpoint])
 
   useEffect(() => {
@@ -62,11 +64,15 @@ export default function App() {
   useEffect(() => {
     if (!api) return
     setLoading(true); setError('')
-    api.storefront(locale).then((value) => { setData(value); void cacheStorefront(value) }).catch(async (cause) => {
+    api.storefront(locale).then((value) => {
+      localStorage.setItem('shop.store-name.th', value.settings.storeNameTh)
+      localStorage.setItem('shop.store-name.en', value.settings.storeNameEn)
+      setData(value); void cacheStorefront(value)
+    }).catch(async (cause) => {
       const cached = await loadCachedStorefront(); if (cached) setData(cached)
       setError(cause instanceof Error ? cause.message : 'เชื่อมต่อร้านค้าไม่สำเร็จ')
     }).finally(() => setLoading(false))
-  }, [api, locale])
+  }, [api, locale, loadAttempt])
 
   const connect = async (raw: string) => {
     const client = new ApiClient(raw); await client.health(); await client.connectionTest()
@@ -105,7 +111,10 @@ export default function App() {
   const signOut = () => { sessionStorage.removeItem('shop.session'); setSession(null); navigate('home') }
 
   if (!endpoint && !demo) return <SetupPage locale={locale} setLocale={setLocale} onConnect={connect} onDemo={startDemo} />
-  if (!data) return <SetupPage locale={locale} setLocale={setLocale} onConnect={connect} onDemo={startDemo} loading={loading} error={error} />
+  if (!data) {
+    const rememberedName = localStorage.getItem(`shop.store-name.${locale}`) || (locale === 'th' ? 'ร้านของฉัน' : 'My Shop')
+    return <StoreLoadingScreen locale={locale} storeName={rememberedName} error={loading ? '' : error} onRetry={() => setLoadAttempt((value) => value + 1)} />
+  }
 
   const common = { data, locale, online, navigate, addToCart }
   let page: React.ReactNode
