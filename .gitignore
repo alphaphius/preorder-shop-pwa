@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+.env.local
+.clasp.json
+.clasprc.json
+.setup-state.json
+coverage/
+*.log
+.DS_Store

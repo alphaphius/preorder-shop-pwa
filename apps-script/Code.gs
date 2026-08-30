@@ -1,0 +1,56 @@
+var API_VERSION = '1.0.0';
+var SCHEMA_VERSION = 1;
+
+function doGet(e) {
+  var requestId = Utilities.getUuid();
+  try {
+    var action = e && e.parameter && e.parameter.action || 'health';
+    if (action === 'health') return output_(true, health_(), requestId);
+    if (action === 'storefront') return output_(true, storefront_(e.parameter.locale || 'th'), requestId);
+    throw apiError_('NOT_FOUND', 'ไม่พบคำสั่งที่ร้องขอ');
+  } catch (error) { return errorOutput_(error, requestId); }
+}
+
+function doPost(e) {
+  var body = {};
+  try {
+    body = JSON.parse(e && e.postData && e.postData.contents || '{}');
+    if (!body.action) throw apiError_('BAD_REQUEST', 'ไม่ระบุ action');
+    var requestId = body.requestId || Utilities.getUuid();
+    var data = route_(body.action, body.payload || {}, body.session || '', requestId);
+    return output_(true, data, requestId);
+  } catch (error) { return errorOutput_(error, body.requestId); }
+}
+
+function route_(action, payload, token, requestId) {
+  if (action === 'connectionTest') return connectionTest_();
+  if (action === 'requestOtp') return requestOtp_(payload.email);
+  if (action === 'verifyOtp') return verifyOtp_(payload.email, payload.code);
+  var session = requireSession_(token);
+  if (action === 'me') return publicUser_(session.user);
+  if (action === 'createReservation') return createReservation_(session, payload, requestId);
+  if (action === 'uploadSlip') return uploadSlip_(session, payload, requestId);
+  if (action === 'listOrders') return listOrders_(session);
+  if (action === 'toggleFavorite') return toggleFavorite_(session, payload.productId, requestId);
+  if (action === 'adminDashboard') return adminDashboard_(requireRole_(session, ['ADMIN', 'OWNER']));
+  if (action === 'adminSaveProduct') return adminSaveProduct_(requireRole_(session, ['ADMIN', 'OWNER']), payload, requestId);
+  if (action === 'adminReviewPayment') return adminReviewPayment_(requireRole_(session, ['ADMIN', 'OWNER']), payload, requestId);
+  if (action === 'adminTransitionOrder') return adminTransitionOrder_(requireRole_(session, ['ADMIN', 'OWNER']), payload, requestId);
+  if (action === 'adminSendMessage') return adminSendMessage_(requireRole_(session, ['ADMIN', 'OWNER']), payload, requestId);
+  if (action === 'jobStatus') return jobStatus_(payload.jobId, session);
+  throw apiError_('NOT_FOUND', 'ไม่พบคำสั่ง ' + action);
+}
+
+function health_() {
+  var props = PropertiesService.getScriptProperties();
+  return { apiVersion: API_VERSION, schemaVersion: SCHEMA_VERSION, installed: props.getProperty('SCHEMA_VERSION') === String(SCHEMA_VERSION), storage: 'CONTAINER_BOUND_SHEET', serverTime: new Date().toISOString() };
+}
+
+function output_(ok, data, requestId) {
+  return ContentService.createTextOutput(JSON.stringify({ ok: ok, data: data, error: null, requestId: requestId || Utilities.getUuid(), serverTime: new Date().toISOString(), apiVersion: API_VERSION })).setMimeType(ContentService.MimeType.JSON);
+}
+function errorOutput_(error, requestId) {
+  console.error(error && error.stack || error);
+  return ContentService.createTextOutput(JSON.stringify({ ok: false, data: null, error: { code: error.code || 'SERVER_ERROR', message: error.message || 'เกิดข้อผิดพลาดใน Apps Script', details: error.details || null }, requestId: requestId || Utilities.getUuid(), serverTime: new Date().toISOString(), apiVersion: API_VERSION })).setMimeType(ContentService.MimeType.JSON);
+}
+function apiError_(code, message, details) { var error = new Error(message); error.code = code; error.details = details; return error; }

@@ -1,0 +1,85 @@
+export type Locale = 'th' | 'en'
+export type ThemePreference = 'system' | 'light' | 'dark' | 'contrast'
+export type ProductType = 'READY' | 'PREORDER'
+export type UserRole = 'CUSTOMER' | 'ADMIN' | 'OWNER'
+export type Route = 'home' | 'favorites' | 'cart' | 'orders' | 'profile' | 'product' | 'payment' | 'preorder' | 'order-detail' | 'admin'
+
+export interface ShopSettings {
+  storeNameTh: string
+  storeNameEn: string
+  logoUrl?: string
+  primaryColor: string
+  defaultTheme: ThemePreference
+  allowUserTheme: boolean
+  pointsEnabled: boolean
+  reviewsEnabled: boolean
+  favoritesEnabled: boolean
+  reservationMinutes: number
+  currency: 'THB'
+  shippingFee: number
+}
+
+export interface Category { id: string; nameTh: string; nameEn: string; active: boolean; sortOrder: number }
+export interface Announcement { id: string; headerTh: string; headerEn: string; bodyTh: string; bodyEn: string; imageUrl?: string; kind: 'GENERAL' | 'NEW_PRODUCT' | 'PREORDER'; active: boolean }
+export interface Product {
+  id: string
+  type: ProductType
+  titleTh: string
+  titleEn: string
+  descriptionTh: string
+  descriptionEn: string
+  price: number
+  deposit: number
+  stockOnHand: number
+  reservedQuantity: number
+  purchaseLimit: number
+  points: number
+  active: boolean
+  reviewEnabled: boolean
+  imageUrls: string[]
+  categoryId: string
+  preorderCampaignId?: string
+}
+export interface PreorderTerms { id: string; version: number; titleTh: string; titleEn: string; bodyTh: string; bodyEn: string }
+export interface PreorderCampaign {
+  id: string
+  nameTh: string
+  nameEn: string
+  openAt: string
+  closeAt: string
+  expectedArrival: string
+  capacity: number
+  reservedQuantity: number
+  purchaseLimit: number
+  deposit: number
+  finalPaymentTrigger: string
+  status: 'DRAFT' | 'OPEN' | 'FULL' | 'CLOSED' | 'CANCELLED'
+  terms: PreorderTerms
+}
+export interface PaymentAccount { id: string; bankName: string; accountName: string; accountNumberMasked: string; active: boolean }
+export interface StorefrontData {
+  settings: ShopSettings
+  categories: Category[]
+  announcements: Announcement[]
+  products: Product[]
+  campaigns: PreorderCampaign[]
+  paymentAccounts: PaymentAccount[]
+  serverTime: string
+}
+export interface SessionInfo { token: string; expiresAt: string; user: UserProfile }
+export interface UserProfile { id: string; email: string; displayName: string; role: UserRole; locale: Locale; pointsBalance: number }
+export interface CartLine { productId: string; quantity: number }
+export interface OrderSummary {
+  id: string
+  reference: string
+  orderType: ProductType
+  status: string
+  subtotal: number
+  totalPaid: number
+  balanceDue: number
+  reservedUntil?: string
+  createdAt: string
+}
+export interface ReservationResult { order: OrderSummary; serverTime: string }
+export interface ApiEnvelope<T> { ok: boolean; data?: T; error?: { code: string; message: string; details?: unknown }; requestId: string; serverTime: string; apiVersion: string }
+export interface OutboxMutation { id: string; entity: string; action: string; payload: unknown; createdAt: string; attempts: number; nextAttemptAt: string; state: 'QUEUED' | 'SENDING' | 'RETRY_WAIT' | 'CONFLICT' | 'FAILED' | 'CONFIRMED'; lastError?: string }

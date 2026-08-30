@@ -1,0 +1,14 @@
+{
+  "name": "Preorder Shop",
+  "short_name": "Preorder",
+  "description": "ร้านค้าสินค้าพร้อมส่งและ Pre-order",
+  "start_url": "./#/home",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#faf8ff",
+  "theme_color": "#6d28d9",
+  "lang": "th",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Preorder Shop">
+  <rect width="512" height="512" rx="128" fill="#6d28d9"/>
+  <path d="M151 205h210l-17 190H168l-17-190Z" fill="#fff" opacity=".97"/>
+  <path d="M201 215v-35c0-30 24-54 55-54s55 24 55 54v35" fill="none" stroke="#fff" stroke-width="28" stroke-linecap="round"/>
+  <path d="M218 286h76M256 248v76" stroke="#6d28d9" stroke-width="28" stroke-linecap="round"/>
+</svg>

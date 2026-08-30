@@ -1,0 +1,20 @@
+import { useEffect, useState } from 'react'
+import { Bell, Gear, Heart, Package, SignOut, Star, UserCircle } from '@phosphor-icons/react'
+import type { ApiClient } from '../api/client'
+import type { Locale, OrderSummary, SessionInfo, ThemePreference } from '../domain/types'
+
+const text = (locale: Locale, th: string, en: string) => locale === 'th' ? th : en
+export function OrdersPage({ locale, session, api, demo, pendingOrder }: { locale: Locale; session: SessionInfo | null; api: ApiClient | null; demo: boolean; pendingOrder: OrderSummary | null }) {
+  const [orders, setOrders] = useState<OrderSummary[]>(pendingOrder ? [pendingOrder] : []); const [error, setError] = useState('')
+  useEffect(() => { if (!demo && api && session) api.listOrders(session.token).then(setOrders).catch((cause) => setError(cause instanceof Error ? cause.message : 'โหลดออเดอร์ไม่สำเร็จ')) }, [api, session, demo])
+  return <div className="page narrow-page"><div className="section-heading"><div><h1>{text(locale, 'คำสั่งซื้อของฉัน', 'My orders')}</h1><p>{text(locale, 'ดูการชำระเงิน ข้อความจากร้าน และสถานะล่าสุด', 'See payments, store messages, and current status.')}</p></div></div>{error && <p className="form-error">{error}</p>}{orders.length === 0 ? <div className="empty-state"><Package size={38} /><h2>{text(locale, 'ยังไม่มีคำสั่งซื้อ', 'No orders yet')}</h2><p>{text(locale, 'ออเดอร์ที่ยืนยันแล้วจะปรากฏที่นี่', 'Confirmed orders will appear here.')}</p></div> : <div className="order-list">{orders.map((order) => <article className="order-card" key={order.id}><div><span>{order.orderType === 'PREORDER' ? 'Pre-order' : text(locale, 'พร้อมส่ง', 'Ready stock')}</span><strong>{order.reference}</strong></div><span className="status-badge">{order.status === 'AWAITING_PAYMENT' ? text(locale, 'รอส่งหลักฐาน', 'Awaiting proof') : order.status}</span><dl><div><dt>{text(locale, 'ยอดรวม', 'Total')}</dt><dd>฿{order.subtotal.toLocaleString()}</dd></div><div><dt>{text(locale, 'คงเหลือ', 'Balance')}</dt><dd>฿{order.balanceDue.toLocaleString()}</dd></div></dl></article>)}</div>}</div>
+}
+
+export function ProfilePage({ locale, session, theme, setTheme, signOut, requestAuth }: { locale: Locale; session: SessionInfo | null; theme: ThemePreference; setTheme: (v: ThemePreference) => void; signOut: () => void; requestAuth: () => void }) {
+  return <div className="page narrow-page"><section className="profile-hero"><UserCircle size={48} weight="duotone" /><div><h1>{session?.user.displayName || text(locale, 'ผู้เยี่ยมชม', 'Guest')}</h1><p>{session?.user.email || text(locale, 'เข้าสู่ระบบเพื่อสั่งซื้อและติดตามสถานะ', 'Sign in to order and track status.')}</p></div>{!session && <button className="primary-button" onClick={requestAuth}>{text(locale, 'เข้าสู่ระบบ', 'Sign in')}</button>}</section>
+    {session && <div className="points-panel"><Star size={28} weight="fill" /><div><span>{text(locale, 'แต้มสะสม', 'Reward points')}</span><strong>{session.user.pointsBalance.toLocaleString()}</strong></div></div>}
+    <div className="settings-list"><button><Package /><span>{text(locale, 'คำสั่งซื้อของฉัน', 'My orders')}</span></button><button><Heart /><span>{text(locale, 'รายการโปรด', 'Favorites')}</span></button><button><Bell /><span>{text(locale, 'การแจ้งเตือน', 'Notifications')}</span></button>{session && (session.user.role === 'ADMIN' || session.user.role === 'OWNER') && <a href="#/admin"><Gear /><span>{text(locale, 'เปิดหลังบ้าน', 'Open admin')}</span></a>}</div>
+    <section className="appearance-panel"><h2>{text(locale, 'รูปแบบการแสดงผล', 'Appearance')}</h2><div className="theme-grid">{(['system', 'light', 'dark', 'contrast'] as ThemePreference[]).map((item) => <button key={item} className={theme === item ? 'is-active' : ''} onClick={() => setTheme(item)}>{item === 'system' ? text(locale, 'ตามอุปกรณ์', 'System') : item === 'light' ? text(locale, 'กลางวัน', 'Light') : item === 'dark' ? text(locale, 'กลางคืน', 'Dark') : text(locale, 'คอนทราสต์สูง', 'High contrast')}</button>)}</div></section>
+    {session && <button className="danger-button" onClick={signOut}><SignOut />{text(locale, 'ออกจากระบบ', 'Sign out')}</button>}
+  </div>
+}
