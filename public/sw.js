@@ -1,7 +1,7 @@
-const VERSION = 'preorder-shop-shell-v1'
+const VERSION = 'preorder-shop-shell-v2'
 const scopeUrl = new URL(self.registration.scope)
 const asset = (name) => new URL(name, scopeUrl).toString()
-const SHELL = [asset(''), asset('index.html'), asset('manifest.webmanifest'), asset('icon.svg'), asset('config.js')]
+const SHELL = [asset(''), asset('index.html'), asset('manifest.webmanifest'), asset('icon.svg'), asset('runtime-config.js')]
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(VERSION).then((cache) => cache.addAll(SHELL)).then(() => self.skipWaiting()))

@@ -47,7 +47,7 @@ npm run verify
 7. เลือก `Preorder Shop > ตั้งค่า Owner จากบัญชีปัจจุบัน`
 8. Deploy เป็น Web App: Execute as “Me”, access “Anyone” แล้วคัดลอก URL `/exec`
 
-Sheet ID, Script ID, Drive ID, session และ OAuth credentials ต้องไม่ commit ส่วน Web App URL `/exec` ของระบบนี้กำหนดไว้ใน `public/config.js` เพื่อให้ GitHub Pages เชื่อมต่ออัตโนมัติ ทั้งนี้ URL ไม่ใช่สิทธิ์เข้าถึงและ API ยังตรวจ session ทุกคำสั่งที่ได้รับการป้องกัน
+Sheet ID, Script ID, Drive ID, session และ OAuth credentials ต้องไม่ commit ส่วน Web App URL `/exec` ของระบบนี้กำหนดไว้ใน `public/runtime-config.js` เพื่อให้ GitHub Pages เชื่อมต่ออัตโนมัติ ทั้งนี้ URL ไม่ใช่สิทธิ์เข้าถึงและ API ยังตรวจ session ทุกคำสั่งที่ได้รับการป้องกัน
 
 ## เชื่อมต่อหน้าเว็บ
 
@@ -58,7 +58,7 @@ Sheet ID, Script ID, Drive ID, session และ OAuth credentials ต้อง�
 - POST redirect/response
 - เขียน อ่าน และล้าง diagnostic record แบบ idempotent
 
-Web App URL ถูกกำหนดใน `public/config.js` สำหรับ single-store deployment นี้ ผู้ใช้งานจึงไม่ต้องกรอก URL เอง หน้า setup จะปรากฏเฉพาะเมื่อ Config หายหรือการเชื่อมต่อไม่พร้อม
+Web App URL ถูกกำหนดใน `public/runtime-config.js` สำหรับ single-store deployment นี้ ผู้ใช้งานจึงไม่ต้องกรอก URL เอง หน้า setup จะปรากฏเฉพาะเมื่อ Config หายหรือการเชื่อมต่อไม่พร้อม
 
 ## Deploy GitHub Pages
 

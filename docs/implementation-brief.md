@@ -23,7 +23,7 @@
 
 GitHub Pages uses hash routing in the first release so refresh and nested repository paths do not return 404.
 
-The deployed Apps Script `/exec` URL is configured in `public/config.js` for this single-store repository. It is a routable endpoint, not an authorization secret; every protected action still requires a valid opaque session.
+The deployed Apps Script `/exec` URL is configured in `public/runtime-config.js` for this single-store repository. It is a routable endpoint, not an authorization secret; every protected action still requires a valid opaque session.
 
 ## Permission model
 
