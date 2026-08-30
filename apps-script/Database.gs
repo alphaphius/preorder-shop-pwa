@@ -30,7 +30,7 @@ var TABLES = {
 };
 
 function onOpen() {
-  SpreadsheetApp.getUi().createMenu('Preorder Shop').addItem('สร้าง/อัปเดตฐานข้อมูล', 'setupSystem').addItem('ตั้งค่า Owner จากบัญชีปัจจุบัน', 'configureCurrentUserAsOwner').addItem('ประมวลผลงานค้าง', 'processJobs').addToUi();
+  SpreadsheetApp.getUi().createMenu('Preorder Shop').addItem('สร้าง/อัปเดตฐานข้อมูล', 'setupSystem').addItem('เพิ่มข้อมูลตัวอย่างสำหรับทดสอบ', 'seedMockData').addItem('ตั้งค่า Owner จากบัญชีปัจจุบัน', 'configureCurrentUserAsOwner').addItem('ประมวลผลงานค้าง', 'processJobs').addToUi();
 }
 
 function setupSystem() {
@@ -63,11 +63,13 @@ function bindContainerSpreadsheet_() {
   if (!ss) throw apiError_('CONTAINER_REQUIRED', 'สคริปต์นี้ต้องสร้างจาก Google Sheet เดิม และต้องรัน setupSystem จากหน้า Spreadsheet');
   PropertiesService.getScriptProperties().setProperty('SPREADSHEET_ID', ss.getId()); return ss;
 }
+var SPREADSHEET_RUNTIME_CACHE_;
 function spreadsheet_() {
-  var active = SpreadsheetApp.getActiveSpreadsheet(); if (active) return active;
+  if (SPREADSHEET_RUNTIME_CACHE_) return SPREADSHEET_RUNTIME_CACHE_;
+  var active = SpreadsheetApp.getActiveSpreadsheet(); if (active) { SPREADSHEET_RUNTIME_CACHE_ = active; return active; }
   var id = PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID') || CONFIG.SPREADSHEET_ID;
   if (!id) throw apiError_('NOT_INSTALLED', 'กรุณารัน setupSystem จาก Google Sheet ก่อน');
-  return SpreadsheetApp.openById(id);
+  SPREADSHEET_RUNTIME_CACHE_ = SpreadsheetApp.openById(id); return SPREADSHEET_RUNTIME_CACHE_;
 }
 function ensureSheet_(ss, name, headers) {
   var sheet = ss.getSheetByName(name) || ss.insertSheet(name);
@@ -80,7 +82,10 @@ function ensureSheet_(ss, name, headers) {
   if (!sheet.getFilter() && sheet.getLastColumn() > 0) sheet.getRange(1, 1, Math.max(1, sheet.getLastRow()), sheet.getLastColumn()).createFilter();
   return sheet;
 }
-function sheet_(name) { return ensureSheet_(spreadsheet_(), name, TABLES[name]); }
+function sheet_(name) {
+  var ss = spreadsheet_();
+  return ss.getSheetByName(name) || ensureSheet_(ss, name, TABLES[name]);
+}
 function records_(name) {
   var sheet = sheet_(name); if (sheet.getLastRow() < 2) return [];
   var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
