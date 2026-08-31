@@ -1,4 +1,4 @@
-import type { AdminAccount, AdminConfiguration, AdminWorkspace, Announcement, ApiEnvelope, Category, OrderStatusOption, OrderSummary, PaymentAccount, PreorderCampaign, Product, ProductReview, ReservationResult, SessionInfo, ShopSettings, StorefrontData, UserNotification, UserProfile } from '../domain/types'
+import type { AdminAccount, AdminConfiguration, AdminDashboard, AdminWorkspace, Announcement, ApiEnvelope, Category, OrderStatusOption, OrderSummary, PaymentAccount, PreorderCampaign, Product, ProductReview, ReservationResult, SessionInfo, ShopSettings, StorefrontData, UserNotification, UserProfile } from '../domain/types'
 
 const EXEC_URL = /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/
 export function normalizeEndpoint(raw: string) {
@@ -43,10 +43,11 @@ export class ApiClient {
   listFavorites(session: string) { return this.post<string[]>('listFavorites', {}, session) }
   toggleFavorite(session: string, productId: string) { return this.post<{ active: boolean }>('toggleFavorite', { productId }, session) }
   productReviews(productId: string) { return this.get<ProductReview[]>('productReviews', { productId }) }
+  publicMedia(id: string) { return this.get<{ id:string; mimeType:string; base64:string }>('publicMedia', { id }) }
   createReview(session: string, productId: string, rating: number, body: string) { return this.post<ProductReview>('createReview', { productId, rating, body }, session) }
   listNotifications(session: string) { return this.post<UserNotification[]>('listNotifications', {}, session) }
   readNotification(session: string, id: string) { return this.post<UserNotification>('readNotification', { id }, session) }
-  adminDashboard(session: string) { return this.post<Record<string, number>>('adminDashboard', {}, session) }
+  adminDashboard(session: string) { return this.post<AdminDashboard>('adminDashboard', {}, session) }
   adminWorkspace(session: string) { return this.post<AdminWorkspace>('adminWorkspace', {}, session) }
   adminConfiguration(session: string) { return this.post<AdminConfiguration>('adminConfiguration', {}, session) }
   adminSaveSettings(session: string, settings: Partial<ShopSettings>) { return this.post<ShopSettings>('adminSaveSettings', settings, session) }
@@ -62,4 +63,6 @@ export class ApiClient {
   adminTransitionOrder(session: string, orderId: string, status: string, note = '') { return this.post<Record<string, unknown>>('adminTransitionOrder', { orderId, status, note }, session) }
   adminSendMessage(session: string, orderId: string, bodyTh: string, bodyEn = '', sendEmail = true) { return this.post<Record<string, unknown>>('adminSendMessage', { orderId, bodyTh, bodyEn, sendEmail }, session) }
   adminModerateReview(session: string, id: string, approved: boolean, adminReply = '') { return this.post<Record<string, unknown>>('adminModerateReview', { id, approved, adminReply }, session) }
+  adminUploadMedia(session:string,payload:{kind:'PRODUCT_IMAGE'|'ANNOUNCEMENT_IMAGE'|'BLOG_IMAGE';fileName:string;mimeType:string;base64:string}){return this.post<{id:string;ref:string;fileName:string;mimeType:string;size:number}>('adminUploadMedia',payload,session)}
+  adminFile(session:string,id:string){return this.post<{id:string;fileName:string;mimeType:string;base64:string}>('adminFile',{id},session)}
 }

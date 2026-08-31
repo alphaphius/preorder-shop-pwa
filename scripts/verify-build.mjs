@@ -3,12 +3,14 @@ import path from 'node:path'
 
 const root = process.cwd()
 const dist = path.join(root, 'dist')
-const required = ['index.html', 'manifest.webmanifest', 'sw.js', 'icon.svg', 'runtime-config.js']
+const required = ['index.html', 'manifest.webmanifest', 'sw.js', 'icon.svg', 'icon-192.png', 'icon-512.png', 'runtime-config.js']
 for (const name of required) {
   if (!fs.existsSync(path.join(dist, name))) throw new Error(`Missing dist/${name}`)
 }
 const index = fs.readFileSync(path.join(dist, 'index.html'), 'utf8')
 if (!index.includes('manifest.webmanifest')) throw new Error('Manifest link missing')
+const manifest=JSON.parse(fs.readFileSync(path.join(dist,'manifest.webmanifest'),'utf8'))
+if(manifest.display!=='standalone'||!manifest.icons?.some(icon=>icon.sizes==='192x192')||!manifest.icons?.some(icon=>icon.sizes==='512x512'))throw new Error('Android installable manifest contract failed')
 const serviceWorker = fs.readFileSync(path.join(dist, 'sw.js'), 'utf8')
 if (!serviceWorker.includes("url.hostname === 'script.google.com'") || !serviceWorker.includes("url.hostname.endsWith('googleusercontent.com')")) throw new Error('Service worker must bypass Apps Script API origins')
 const publicConfig = fs.readFileSync(path.join(root, 'public', 'runtime-config.js'), 'utf8')

@@ -27,4 +27,16 @@ describe('Apps Script contract', () => {
     expect(source).toContain('function listFavorites_')
     expect(source).toContain("requireRole_(context, ['OWNER'])")
   })
+  it('keeps slips private while supporting in-app viewing and safe public content media',()=>{
+    expect(source).toContain('function adminFile_')
+    expect(source).toContain('function publicMedia_')
+    expect(source).toContain("['PRODUCT_IMAGE','ANNOUNCEMENT_IMAGE','BLOG_IMAGE']")
+    expect(source).not.toContain('drive.google.com/open?id=')
+  })
+  it('provides analytics and rich content fields',()=>{
+    expect(source).toContain('totalTransferred')
+    expect(source).toContain('productSales')
+    expect(source).toContain('contentJson')
+    expect(source).toContain('productIdsJson')
+  })
 })

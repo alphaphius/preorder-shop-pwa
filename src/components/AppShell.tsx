@@ -1,10 +1,12 @@
 import { useLayoutEffect, useRef } from 'react'
-import { Bell, Heart, House, MagnifyingGlass, ShoppingBag, UserCircle } from '@phosphor-icons/react'
+import { Bell, DownloadSimple, Heart, House, MagnifyingGlass, ShoppingBag, UserCircle } from '@phosphor-icons/react'
 import gsap from 'gsap'
 import type { Locale, Route, SessionInfo, StorefrontData } from '../domain/types'
+import { useInstallPrompt } from '../pwa/useInstallPrompt'
 
 interface Props { data: StorefrontData; locale: Locale; setLocale: (v: Locale) => void; route: Route; navigate: (route: Route) => void; cartCount: number; online: boolean; session: SessionInfo | null; children: React.ReactNode }
 export function AppShell({ data, locale, setLocale, route, navigate, cartCount, online, session, children }: Props) {
+  const installPrompt=useInstallPrompt()
   const main = useRef<HTMLElement>(null)
   useLayoutEffect(() => {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches || !main.current) return
@@ -21,6 +23,7 @@ export function AppShell({ data, locale, setLocale, route, navigate, cartCount, 
         <span><strong>{name}</strong><small>{locale === 'th' ? 'เลือกของที่ชอบได้เลย' : 'Find something lovely'}</small></span>
       </button>
       <div className="top-actions">
+        {installPrompt.canInstall&&<button className="install-button" type="button" onClick={installPrompt.install}><DownloadSimple size={19}/><span>{locale==='th'?'ติดตั้ง':'Install'}</span></button>}
         {session && ['ADMIN', 'OWNER'].includes(session.user.role) && <button className="admin-chip" type="button" onClick={() => navigate('admin')}>{session.user.role}</button>}
         <button className="icon-button" type="button" onClick={() => setLocale(locale === 'th' ? 'en' : 'th')} aria-label="Change language">{locale.toUpperCase()}</button>
         <button className="icon-button" type="button" aria-label={locale === 'th' ? 'การแจ้งเตือน' : 'Notifications'}><Bell size={20} /></button>

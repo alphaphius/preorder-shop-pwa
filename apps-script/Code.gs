@@ -8,6 +8,7 @@ function doGet(e) {
     if (action === 'health') return output_(true, health_(), requestId);
     if (action === 'storefront') return output_(true, storefront_(e.parameter.locale || 'th'), requestId);
     if (action === 'productReviews') return output_(true, productReviews_(e.parameter.productId || ''), requestId);
+    if (action === 'publicMedia') return output_(true, publicMedia_(e.parameter.id || ''), requestId);
     throw apiError_('NOT_FOUND', 'ไม่พบคำสั่งที่ร้องขอ');
   } catch (error) { return errorOutput_(error, requestId); }
 }
@@ -50,6 +51,8 @@ function route_(action, payload, token, requestId) {
   if (action === 'adminSetEntityActive') return adminSetEntityActive_(requireRole_(session, ['ADMIN', 'OWNER']), payload);
   if (action === 'adminSaveStatuses') return adminSaveStatuses_(requireRole_(session, ['ADMIN', 'OWNER']), payload);
   if (action === 'adminModerateReview') return adminModerateReview_(requireRole_(session, ['ADMIN', 'OWNER']), payload);
+  if (action === 'adminUploadMedia') return adminUploadMedia_(requireRole_(session, ['ADMIN', 'OWNER']), payload);
+  if (action === 'adminFile') return adminFile_(requireRole_(session, ['ADMIN', 'OWNER']), payload.id);
   if (action === 'adminReviewPayment') return adminReviewPayment_(requireRole_(session, ['ADMIN', 'OWNER']), payload, requestId);
   if (action === 'adminTransitionOrder') return adminTransitionOrder_(requireRole_(session, ['ADMIN', 'OWNER']), payload, requestId);
   if (action === 'adminSendMessage') return adminSendMessage_(requireRole_(session, ['ADMIN', 'OWNER']), payload, requestId);

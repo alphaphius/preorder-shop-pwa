@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import type { CartLine, Locale, OrderSummary, Product, ProductType, Route, SessionInfo, ShopSettings, StorefrontData, ThemePreference } from '../domain/types'
 import { ApiClient } from '../api/client'
 import { configuredWebAppUrl } from '../config/runtime'
@@ -8,16 +8,16 @@ import { shippingTotal } from '../domain/logic'
 import { AppShell } from '../components/AppShell'
 import { StoreLoadingScreen } from '../components/StoreLoadingScreen'
 import { AuthDialog } from '../pages/AuthDialog'
-import { StorefrontPage, ProductPage } from '../pages/StorePages'
+import { AnnouncementPage, StorefrontPage, ProductPage } from '../pages/StorePages'
 import { CartPage, PaymentPage } from '../pages/CheckoutPages'
 import { OrdersPage, ProfilePage } from '../pages/AccountPages'
-import { AdminPage } from '../pages/AdminPage'
+const AdminPage=lazy(()=>import('../pages/AdminPage').then(module=>({default:module.AdminPage})))
 
 type CartState = Record<ProductType, CartLine[]>
 const emptyCart: CartState = { READY: [], PREORDER: [] }
 const routeFromHash = (): { route: Route; id?: string } => {
   const [route = 'home', id] = location.hash.replace(/^#\/?/, '').split('/')
-  const allowed: Route[] = ['home', 'favorites', 'cart', 'orders', 'profile', 'product', 'payment', 'preorder', 'order-detail', 'admin']
+  const allowed: Route[] = ['home', 'favorites', 'cart', 'orders', 'profile', 'product', 'announcement', 'payment', 'preorder', 'order-detail', 'admin']
   return { route: allowed.includes(route as Route) ? route as Route : 'home', id }
 }
 
@@ -139,11 +139,12 @@ export default function App() {
   const common = { data, locale, online, navigate, addToCart, favoriteIds, toggleFavorite, api, session }
   let page: React.ReactNode
   if (locationState.route === 'product') page = <ProductPage {...common} productId={locationState.id} />
+  else if (locationState.route === 'announcement') page = <AnnouncementPage {...common} productId={locationState.id}/>
   else if (locationState.route === 'cart') page = <CartPage data={data} locale={locale} online={online} session={session} carts={carts} activeType={activeCartType} setActiveType={setActiveCartType} updateQuantity={updateQuantity} reserve={reserve} />
   else if (locationState.route === 'payment') page = <PaymentPage data={data} locale={locale} online={online} order={pendingOrder} api={api} session={session} demo={demo} navigate={navigate} />
   else if (locationState.route === 'orders' || locationState.route === 'order-detail') page = <OrdersPage locale={locale} session={session} api={api} demo={demo} pendingOrder={pendingOrder} onPay={(order)=>{setPendingOrder(order);navigate('payment',order.id)}} />
   else if (locationState.route === 'profile') page = <ProfilePage locale={locale} session={session} api={api} theme={theme} setTheme={setTheme} signOut={signOut} requestAuth={() => setShowAuth(true)} />
-  else if (locationState.route === 'admin') page = <AdminPage locale={locale} session={session} demo={demo} api={api} data={data} onDataChange={setData} />
+  else if (locationState.route === 'admin') page = <Suspense fallback={<div className="page"><div className="admin-skeleton" aria-label={locale==='th'?'กำลังเตรียมหลังบ้าน':'Preparing admin workspace'}/></div>}><AdminPage locale={locale} session={session} demo={demo} api={api} data={data} onDataChange={setData} /></Suspense>
   else page = <StorefrontPage {...common} favoritesOnly={locationState.route === 'favorites'} />
 
   return <>
