@@ -8,7 +8,6 @@ import { shippingTotal } from '../domain/logic'
 import { AppShell } from '../components/AppShell'
 import { StoreLoadingScreen } from '../components/StoreLoadingScreen'
 import { AuthDialog } from '../pages/AuthDialog'
-import { SetupPage } from '../pages/SetupPage'
 import { StorefrontPage, ProductPage } from '../pages/StorePages'
 import { CartPage, PaymentPage } from '../pages/CheckoutPages'
 import { OrdersPage, ProfilePage } from '../pages/AccountPages'
@@ -25,9 +24,9 @@ const routeFromHash = (): { route: Route; id?: string } => {
 export default function App() {
   const [locale, setLocale] = useState<Locale>(() => (localStorage.getItem('shop.locale') as Locale) || 'th')
   const [theme, setTheme] = useState<ThemePreference>(() => (localStorage.getItem('shop.theme') as ThemePreference) || 'system')
-  const [endpoint, setEndpoint] = useState(() => configuredWebAppUrl() || localStorage.getItem('shop.endpoint') || '')
+  const [endpoint] = useState(() => configuredWebAppUrl())
   const [data, setData] = useState<StorefrontData | null>(null)
-  const [demo, setDemo] = useState(false)
+  const [demo] = useState(false)
   const [loading, setLoading] = useState(Boolean(endpoint))
   const [error, setError] = useState('')
   const [online, setOnline] = useState(navigator.onLine)
@@ -87,11 +86,6 @@ export default function App() {
     api.listFavorites(session.token).then(setFavoriteIds).catch(() => undefined)
   }, [api, session?.token, demo])
 
-  const connect = async (raw: string) => {
-    const client = new ApiClient(raw); await client.health(); await client.connectionTest()
-    localStorage.setItem('shop.endpoint', client.endpoint); setEndpoint(client.endpoint)
-  }
-  const startDemo = () => { setDemo(true); setData(mockStorefront); setError(''); location.hash = '#/home' }
   const navigate = (route: Route, id?: string) => { location.hash = `#/${route}${id ? `/${id}` : ''}` }
   const flash = (message: string) => { setToast(message); window.setTimeout(() => setToast(''), 2600) }
   const persistCarts = (next: CartState) => { setCarts(next); void saveCart([...next.READY, ...next.PREORDER]) }
@@ -108,7 +102,7 @@ export default function App() {
     persistCarts({ ...carts, [type]: lines })
   }
   const requireAuth = () => { if (demo || session) return true; setShowAuth(true); return false }
-  const reserve = async (type: ProductType, termsAcceptance?: { termsId: string; version: number }) => {
+  const reserve = async (type: ProductType, termsAcceptance?: { termsId: string; version: number }, redeemPoints = 0, shipping: Record<string,string> = {}) => {
     if (!online) throw new Error(locale === 'th' ? 'ต้องออนไลน์ก่อนยืนยันออเดอร์' : 'Go online to confirm your order')
     if (!requireAuth()) return
     if (demo) {
@@ -119,8 +113,10 @@ export default function App() {
       setPendingOrder(order); navigate('payment', order.id); return
     }
     if (!api || !session) return
-    const result = await api.createReservation(session.token, carts[type], termsAcceptance)
-    setPendingOrder(result.order); navigate('payment', result.order.id)
+    const result = await api.createReservation(session.token, carts[type], termsAcceptance, redeemPoints, shipping)
+    setPendingOrder(result.order); persistCarts({ ...carts, [type]: [] });
+    try { const user=await api.me(session.token);const refreshed={...session,user};sessionStorage.setItem('shop.session',JSON.stringify(refreshed));setSession(refreshed) } catch { /* order is already reserved; profile can refresh later */ }
+    navigate('payment', result.order.id)
   }
   const onAuthenticated = (next: SessionInfo) => { sessionStorage.setItem('shop.session', JSON.stringify(next)); setSession(next); setShowAuth(false); flash(locale === 'th' ? 'เข้าสู่ระบบแล้ว' : 'Signed in') }
   const signOut = () => { sessionStorage.removeItem('shop.session'); setSession(null); setFavoriteIds([]); navigate('home') }
@@ -133,20 +129,20 @@ export default function App() {
     catch (cause) { setFavoriteIds(before); flash(cause instanceof Error ? cause.message : (locale === 'th' ? 'บันทึกรายการโปรดไม่สำเร็จ' : 'Could not save favorite')) }
   }
 
-  if (!endpoint && !demo) return <SetupPage locale={locale} setLocale={setLocale} onConnect={connect} onDemo={startDemo} />
+  if (!endpoint) return <StoreLoadingScreen locale={locale} storeName={locale === 'th' ? 'ร้านของฉัน' : 'My Shop'} error={locale === 'th' ? 'ยังไม่ได้กำหนด Web App URL ในไฟล์ config' : 'The Web App URL is missing from config'} onRetry={() => location.reload()} />
   if (!data) {
     const rememberedName = localStorage.getItem(`shop.store-name.${locale}`) || (locale === 'th' ? 'ร้านของฉัน' : 'My Shop')
     let rememberedSettings: Partial<ShopSettings> = {}; try { rememberedSettings = JSON.parse(localStorage.getItem('shop.loader-settings') || '{}') } catch { /* use defaults */ }
     return <StoreLoadingScreen locale={locale} storeName={rememberedName} title={locale === 'th' ? rememberedSettings.loaderTitleTh : rememberedSettings.loaderTitleEn} kicker={locale === 'th' ? rememberedSettings.loaderKickerTh : rememberedSettings.loaderKickerEn} message={locale === 'th' ? rememberedSettings.loaderMessageTh : rememberedSettings.loaderMessageEn} logoUrl={rememberedSettings.loaderLogoUrl || rememberedSettings.logoUrl} error={loading ? '' : error} onRetry={() => setLoadAttempt((value) => value + 1)} />
   }
 
-  const common = { data, locale, online, navigate, addToCart, favoriteIds, toggleFavorite }
+  const common = { data, locale, online, navigate, addToCart, favoriteIds, toggleFavorite, api, session }
   let page: React.ReactNode
   if (locationState.route === 'product') page = <ProductPage {...common} productId={locationState.id} />
-  else if (locationState.route === 'cart') page = <CartPage data={data} locale={locale} online={online} carts={carts} activeType={activeCartType} setActiveType={setActiveCartType} updateQuantity={updateQuantity} reserve={reserve} />
+  else if (locationState.route === 'cart') page = <CartPage data={data} locale={locale} online={online} session={session} carts={carts} activeType={activeCartType} setActiveType={setActiveCartType} updateQuantity={updateQuantity} reserve={reserve} />
   else if (locationState.route === 'payment') page = <PaymentPage data={data} locale={locale} online={online} order={pendingOrder} api={api} session={session} demo={demo} navigate={navigate} />
-  else if (locationState.route === 'orders' || locationState.route === 'order-detail') page = <OrdersPage locale={locale} session={session} api={api} demo={demo} pendingOrder={pendingOrder} />
-  else if (locationState.route === 'profile') page = <ProfilePage locale={locale} session={session} theme={theme} setTheme={setTheme} signOut={signOut} requestAuth={() => setShowAuth(true)} />
+  else if (locationState.route === 'orders' || locationState.route === 'order-detail') page = <OrdersPage locale={locale} session={session} api={api} demo={demo} pendingOrder={pendingOrder} onPay={(order)=>{setPendingOrder(order);navigate('payment',order.id)}} />
+  else if (locationState.route === 'profile') page = <ProfilePage locale={locale} session={session} api={api} theme={theme} setTheme={setTheme} signOut={signOut} requestAuth={() => setShowAuth(true)} />
   else if (locationState.route === 'admin') page = <AdminPage locale={locale} session={session} demo={demo} api={api} data={data} onDataChange={setData} />
   else page = <StorefrontPage {...common} favoritesOnly={locationState.route === 'favorites'} />
 

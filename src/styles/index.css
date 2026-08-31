@@ -261,6 +261,28 @@ img { max-width: 100%; display: block; }
 .admin-list article > div { min-width: 0; display: grid; }
 .admin-list span { color: var(--color-muted); overflow: hidden; text-overflow: ellipsis; }
 .admin-list b { color: var(--color-primary); font-size: .72rem; }
+.admin-editor { margin-bottom: 20px; padding: 16px; border: 1px solid var(--color-border); border-radius: var(--radius-card); background: var(--color-surface); }
+.admin-form textarea, .order-admin-actions textarea { width: 100%; min-height: 84px; resize: vertical; border: 1px solid var(--color-border); border-radius: 13px; background: var(--color-surface); color: var(--color-text); padding: 10px 12px; }
+.admin-subsection { margin-top: 22px; padding: 16px; border: 1px solid var(--color-border); border-radius: var(--radius-card); background: var(--color-surface); }
+.admin-subsection > h2 { margin: 0 0 13px; }
+.inline-admin-form { display: grid; gap: 8px; }
+.inline-admin-form input, .order-admin-actions select, .status-editor input { min-height: 44px; min-width: 0; border: 1px solid var(--color-border); border-radius: 12px; background: var(--color-background); color: var(--color-text); padding: 8px 10px; }
+.chip-list { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
+.chip-list button { min-height: 40px; border: 1px solid var(--color-border); border-radius: 999px; background: var(--color-surface-soft); padding: 6px 11px; cursor: pointer; }
+.admin-order-list { display: grid; gap: 12px; }
+.admin-order-list > article { border: 1px solid var(--color-border); border-radius: var(--radius-card); background: var(--color-surface); padding: 14px; }
+.order-admin-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.order-admin-head > div { display: grid; }
+.order-admin-head span { color: var(--color-muted); }
+.order-admin-head b { border-radius: 999px; background: var(--color-surface-soft); color: var(--color-primary); padding: 5px 9px; font-size: .7rem; }
+.payment-review { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0; padding: 10px; border-radius: 14px; background: var(--color-surface-soft); }
+.payment-review a { color: var(--color-primary); }
+.payment-review > div { display: flex; gap: 6px; margin-left: auto; }
+.payment-review button { min-height: 40px; border: 1px solid var(--color-border); border-radius: 11px; background: var(--color-surface); cursor: pointer; }
+.order-admin-actions { display: grid; gap: 8px; }
+.status-editor { display: grid; gap: 8px; }
+.status-editor > div { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr) 44px; gap: 6px; }
+.status-editor > div button { border: 1px solid var(--color-border); border-radius: 12px; background: var(--color-surface); color: var(--color-error); }
 .metric-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .metric-card { border: 1px solid var(--color-border); border-radius: var(--radius-card); background: var(--color-surface); padding: 14px; }
 .metric-card span { display: block; color: var(--color-muted); font-size: .8rem; }
@@ -310,6 +332,30 @@ td button { min-height: 38px; border: 1px solid var(--color-border); border-radi
 .dialog form { display: grid; gap: 8px; margin-top: 17px; }
 .dialog-close { position: absolute; right: 14px; top: 14px; width: 44px; height: 44px; border: 1px solid var(--color-border); border-radius: 14px; background: var(--color-surface); font-size: 1.5rem; }
 .status-capsule { position: fixed; left: 50%; bottom: calc(84px + env(safe-area-inset-bottom)); z-index: 70; transform: translateX(-50%); max-width: calc(100vw - 30px); border-radius: 999px; background: var(--color-text); color: var(--color-background); padding: 9px 15px; box-shadow: var(--shadow-soft); pointer-events: none; white-space: nowrap; }
+.points-redeem,.reviews-panel,.notification-list,.order-timeline,.order-message { border: 1px solid var(--color-border); background: var(--color-surface); border-radius: var(--radius-card); }
+.points-redeem { display: grid; grid-template-columns: 1fr minmax(88px,128px); gap: 10px; padding: 15px; align-items: center; }
+.points-redeem div { display: grid; }
+.shipping-form { display: grid; gap: 9px; padding: 15px; border: 1px solid var(--color-border); border-radius: var(--radius-card); background: var(--color-surface); }
+.shipping-form h2 { margin: 0; font-size: 1rem; }
+.shipping-form textarea { min-height: 84px; }
+.points-redeem span,.points-redeem small { color: var(--color-muted); }
+.reviews-panel { padding: 16px; margin-top: 16px; }
+.reviews-panel article { padding: 13px 0; border-bottom: 1px solid var(--color-border); }
+.reviews-panel article span { margin-left: 9px; color: var(--color-muted); }
+.review-form { display: grid; gap: 9px; margin-top: 16px; }
+.review-form textarea { min-height: 96px; }
+.notification-list { display: grid; overflow: hidden; margin-bottom: 16px; }
+.notification-list button { display: grid; text-align: left; gap: 3px; padding: 14px 16px; border: 0; border-bottom: 1px solid var(--color-border); background: transparent; color: inherit; }
+.notification-list button.is-unread { background: color-mix(in srgb,var(--color-primary) 10%,var(--color-surface)); }
+.notification-list span { color: var(--color-muted); }
+.order-items { display: grid; gap: 4px; color: var(--color-muted); margin: 11px 0; }
+.order-timeline { padding: 12px; margin: 11px 0; }
+.order-timeline > div { display: grid; padding: 8px 0; border-top: 1px solid var(--color-border); }
+.order-timeline span { font-size: .82rem; color: var(--color-muted); }
+.order-message { padding: 12px; margin: 10px 0; }
+.review-moderation { display: grid; gap: 11px; }
+.review-moderation article { display: grid; gap: 10px; padding: 14px; border: 1px solid var(--color-border); border-radius: 16px; }
+.review-moderation article > div:last-child { display: flex; gap: 8px; }
 
 @media (min-width: 720px) {
   .page { padding-inline: 24px; }
@@ -322,6 +368,8 @@ td button { min-height: 38px; border: 1px solid var(--color-border); border-radi
   .shipping-choice { grid-template-columns: 1fr 1fr; }
   .admin-product-list article { grid-template-columns: 64px minmax(0,1fr) auto auto; }
   .admin-product-list article > label, .admin-product-list article > button { grid-column: auto; }
+  .inline-admin-form { grid-template-columns: repeat(3,minmax(0,1fr)) auto; }
+  .order-admin-actions { grid-template-columns: minmax(180px,.6fr) minmax(0,1fr) auto; align-items: start; }
 }
 @media (min-width: 1024px) {
   .app-shell { padding-bottom: 0; }

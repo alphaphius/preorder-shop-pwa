@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { CaretLeft, CaretRight, Heart, MagnifyingGlass, Minus, Plus } from '@phosphor-icons/react'
 import type { Announcement, Locale, Product, Route, StorefrontData } from '../domain/types'
+import type { ProductReview, SessionInfo } from '../domain/types'
+import type { ApiClient } from '../api/client'
 import { availableStock } from '../domain/logic'
 
 interface Common {
@@ -11,6 +13,8 @@ interface Common {
   addToCart: (product: Product, quantity?: number) => void
   favoriteIds: string[]
   toggleFavorite: (productId: string) => void
+  api: ApiClient | null
+  session: SessionInfo | null
 }
 const text = (locale: Locale, th: string, en: string) => locale === 'th' ? th : en
 
@@ -58,7 +62,7 @@ function ProductGallery({ product, locale }: { product: Product; locale: Locale 
   return <div className="product-gallery" data-animate-item><div className="detail-image">{images[index] ? <img src={images[index]} alt={`${text(locale, product.titleTh, product.titleEn)} ${index + 1}`} /> : <span>{text(locale, 'รูปสินค้า', 'Product image')}</span>}{images.length > 1 && <><button className="gallery-control is-prev" onClick={() => setIndex((index - 1 + images.length) % images.length)} aria-label={text(locale, 'รูปก่อนหน้า', 'Previous image')}><CaretLeft /></button><button className="gallery-control is-next" onClick={() => setIndex((index + 1) % images.length)} aria-label={text(locale, 'รูปถัดไป', 'Next image')}><CaretRight /></button></>}</div>{images.length > 1 && <div className="gallery-thumbs">{images.map((image, imageIndex) => <button type="button" key={`${image}-${imageIndex}`} className={imageIndex === index ? 'is-active' : ''} onClick={() => setIndex(imageIndex)}><img src={image} alt="" /></button>)}</div>}</div>
 }
 
-export function ProductPage({ data, locale, productId, navigate, addToCart, favoriteIds, toggleFavorite }: Common & { productId?: string }) {
+export function ProductPage({ data, locale, productId, navigate, addToCart, favoriteIds, toggleFavorite, api, session }: Common & { productId?: string }) {
   const product = data.products.find((item) => item.id === productId) || data.products[0]; const [quantity, setQuantity] = useState(1)
   if (!product) return null
   const remaining = availableStock(product); const campaign = data.campaigns.find((item) => item.id === product.preorderCampaignId); const favorite = favoriteIds.includes(product.id)
@@ -73,5 +77,8 @@ export function ProductPage({ data, locale, productId, navigate, addToCart, favo
         <button className="primary-button sticky-mobile-action" type="button" onClick={() => addToCart(product, quantity)} disabled={remaining < 1}>{text(locale, `เพิ่มลงตะกร้า · ฿${(product.price * quantity).toLocaleString()}`, `Add to cart · ฿${(product.price * quantity).toLocaleString()}`)}</button>
       </section>
     </div>
+    {data.settings.reviewsEnabled&&product.reviewEnabled&&<ReviewsPanel locale={locale} productId={product.id} api={api} session={session}/>}
   </div>
 }
+
+function ReviewsPanel({locale,productId,api,session}:{locale:Locale;productId:string;api:ApiClient|null;session:SessionInfo|null}){const [reviews,setReviews]=useState<ProductReview[]>([]);const [rating,setRating]=useState(5);const [body,setBody]=useState('');const [message,setMessage]=useState('');useEffect(()=>{api?.productReviews(productId).then(setReviews).catch(()=>undefined)},[api,productId]);const submit=async()=>{if(!api||!session){setMessage(text(locale,'กรุณาเข้าสู่ระบบก่อนรีวิว','Sign in to review'));return}try{await api.createReview(session.token,productId,rating,body);setBody('');setMessage(text(locale,'ส่งรีวิวแล้ว รอแอดมินอนุมัติ','Review submitted for approval'))}catch(e){setMessage(e instanceof Error?e.message:'Error')}};return <section className="reviews-panel"><div className="section-heading"><div><h2>{text(locale,'รีวิวจากผู้ซื้อ','Customer reviews')}</h2><p>{reviews.length} {text(locale,'รีวิว','reviews')}</p></div></div>{reviews.map(r=><article key={r.id}><strong>{'★'.repeat(r.rating)}{'☆'.repeat(5-r.rating)}</strong><span>{r.displayName}</span><p>{r.body}</p>{r.adminReply&&<small>{text(locale,'ร้านตอบ: ','Store reply: ')}{r.adminReply}</small>}</article>)}<div className="review-form"><select value={rating} onChange={e=>setRating(Number(e.target.value))}>{[5,4,3,2,1].map(v=><option key={v} value={v}>{v} ★</option>)}</select><textarea placeholder={text(locale,'เขียนรีวิวหลังได้รับสินค้า','Write a review after delivery')} value={body} onChange={e=>setBody(e.target.value)}/><button className="secondary-button" onClick={submit}>{text(locale,'ส่งรีวิว','Submit review')}</button>{message&&<small>{message}</small>}</div></section>}

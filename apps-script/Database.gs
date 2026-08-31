@@ -8,7 +8,7 @@ var TABLES = {
   PreorderCampaigns: ['id','nameTh','nameEn','openAt','closeAt','expectedArrival','capacity','purchaseLimit','deposit','finalPaymentTrigger','termsId','status','createdAt','updatedAt','version'],
   PreorderTerms: ['id','campaignId','versionNumber','titleTh','titleEn','bodyTh','bodyEn','effectiveAt','createdBy','createdAt','updatedAt','version'],
   TermsAcceptances: ['id','orderId','userId','termsId','versionNumber','acceptedAt','deviceInfo','createdAt','updatedAt','version'],
-  Orders: ['id','reference','userId','orderType','status','subtotal','shippingFee','amountDueNow','totalPaid','balanceDue','reservedUntil','shippingJson','termsVersion','paymentAccountId','createdAt','updatedAt','version'],
+  Orders: ['id','reference','userId','orderType','status','subtotal','shippingFee','amountDueNow','totalPaid','balanceDue','reservedUntil','shippingJson','termsVersion','paymentAccountId','createdAt','updatedAt','version','pointsRedeemed','discount'],
   OrderItems: ['id','orderId','productId','titleSnapshot','unitPrice','depositUnit','quantity','pointsUnit','createdAt','updatedAt','version'],
   StockReservations: ['id','orderId','productId','userId','quantity','state','expiresAt','createdAt','updatedAt','version'],
   Payments: ['id','orderId','userId','kind','amount','accountId','slipFileId','transferAt','status','reviewNote','reviewedBy','reviewedAt','createdAt','updatedAt','version'],
@@ -108,7 +108,7 @@ function deleteRow_(name, row) { sheet_(name).deleteRow(row); }
 function setting_(key, fallback) { var record = findOne_('Settings', 'key', key); if (!record) return fallback; try { return JSON.parse(record.value); } catch (_) { return record.value; } }
 function setSetting_(key, value) { var record = findOne_('Settings', 'key', key); var payload = typeof value === 'string' ? value : JSON.stringify(value); return record ? update_('Settings', record.id, { value: payload }) : insert_('Settings', { id: key, key: key, value: payload }); }
 function seedSettings_() {
-  var defaults = { storeNameTh: 'ร้านของฉัน', storeNameEn: 'My Shop', primaryColor: '#6d28d9', defaultTheme: 'system', allowUserTheme: true, pointsEnabled: true, reviewsEnabled: true, favoritesEnabled: true, reservationMinutes: 20, currency: 'THB', shippingFee: 50, shippingMode: 'CART', cartShippingFee: 50, loaderKickerTh: 'ยินดีต้อนรับสู่', loaderKickerEn: 'Welcome to', loaderTitleTh: '', loaderTitleEn: '', loaderMessageTh: 'กำลังจัดชั้นสินค้าให้คุณ', loaderMessageEn: 'Curating the shelves for you', loaderLogoUrl: '' };
+  var defaults = { storeNameTh: 'ร้านของฉัน', storeNameEn: 'My Shop', primaryColor: '#6d28d9', defaultTheme: 'system', allowUserTheme: true, pointsEnabled: true, reviewsEnabled: true, favoritesEnabled: true, reservationMinutes: 20, currency: 'THB', shippingFee: 50, shippingMode: 'CART', cartShippingFee: 50, pointsPerBaht: 10, minimumRedeemPoints: 100, maxRedeemPercent: 20, loaderKickerTh: 'ยินดีต้อนรับสู่', loaderKickerEn: 'Welcome to', loaderTitleTh: '', loaderTitleEn: '', loaderMessageTh: 'กำลังจัดชั้นสินค้าให้คุณ', loaderMessageEn: 'Curating the shelves for you', loaderLogoUrl: '' };
   Object.keys(defaults).forEach(function(key) { if (!findOne_('Settings', 'key', key)) setSetting_(key, defaults[key]); });
 }
 function seedReferenceData_() {

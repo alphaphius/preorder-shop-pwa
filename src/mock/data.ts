@@ -2,7 +2,7 @@ import type { StorefrontData } from '../domain/types'
 
 const now = Date.now()
 export const mockStorefront: StorefrontData = {
-  settings: { storeNameTh: 'Mellow Mart', storeNameEn: 'Mellow Mart', primaryColor: '#6d28d9', defaultTheme: 'system', allowUserTheme: true, pointsEnabled: true, reviewsEnabled: true, favoritesEnabled: true, reservationMinutes: 20, currency: 'THB', shippingFee: 50, shippingMode: 'CART', cartShippingFee: 50, loaderKickerTh: 'ยินดีต้อนรับสู่', loaderKickerEn: 'Welcome to', loaderTitleTh: '', loaderTitleEn: '', loaderMessageTh: 'กำลังจัดชั้นสินค้าให้คุณ', loaderMessageEn: 'Curating the shelves for you', loaderLogoUrl: '' },
+  settings: { storeNameTh: 'Mellow Mart', storeNameEn: 'Mellow Mart', primaryColor: '#6d28d9', defaultTheme: 'system', allowUserTheme: true, pointsEnabled: true, reviewsEnabled: true, favoritesEnabled: true, reservationMinutes: 20, currency: 'THB', shippingFee: 50, shippingMode: 'CART', cartShippingFee: 50, pointsPerBaht: 10, minimumRedeemPoints: 100, maxRedeemPercent: 20, loaderKickerTh: 'ยินดีต้อนรับสู่', loaderKickerEn: 'Welcome to', loaderTitleTh: '', loaderTitleEn: '', loaderMessageTh: 'กำลังจัดชั้นสินค้าให้คุณ', loaderMessageEn: 'Curating the shelves for you', loaderLogoUrl: '' },
   categories: [
     { id: 'all', nameTh: 'ทั้งหมด', nameEn: 'All', active: true, sortOrder: 0 },
     { id: 'ready', nameTh: 'พร้อมส่ง', nameEn: 'Ready stock', active: true, sortOrder: 1 },

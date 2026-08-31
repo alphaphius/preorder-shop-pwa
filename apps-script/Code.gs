@@ -7,6 +7,7 @@ function doGet(e) {
     var action = e && e.parameter && e.parameter.action || 'health';
     if (action === 'health') return output_(true, health_(), requestId);
     if (action === 'storefront') return output_(true, storefront_(e.parameter.locale || 'th'), requestId);
+    if (action === 'productReviews') return output_(true, productReviews_(e.parameter.productId || ''), requestId);
     throw apiError_('NOT_FOUND', 'ไม่พบคำสั่งที่ร้องขอ');
   } catch (error) { return errorOutput_(error, requestId); }
 }
@@ -33,11 +34,22 @@ function route_(action, payload, token, requestId) {
   if (action === 'listOrders') return listOrders_(session);
   if (action === 'listFavorites') return listFavorites_(session);
   if (action === 'toggleFavorite') return toggleFavorite_(session, payload.productId, requestId);
+  if (action === 'createReview') return createReview_(session, payload);
+  if (action === 'listNotifications') return listNotifications_(session);
+  if (action === 'readNotification') return readNotification_(session, payload.id);
   if (action === 'adminDashboard') return adminDashboard_(requireRole_(session, ['ADMIN', 'OWNER']));
+  if (action === 'adminWorkspace') return adminWorkspace_(requireRole_(session, ['ADMIN', 'OWNER']));
   if (action === 'adminConfiguration') return adminConfiguration_(requireRole_(session, ['ADMIN', 'OWNER']));
   if (action === 'adminSaveSettings') return adminSaveSettings_(requireRole_(session, ['ADMIN', 'OWNER']), payload);
   if (action === 'adminAddAdmin') return adminAddAdmin_(session, payload);
   if (action === 'adminSaveProduct') return adminSaveProduct_(requireRole_(session, ['ADMIN', 'OWNER']), payload, requestId);
+  if (action === 'adminSaveCategory') return adminSaveCategory_(requireRole_(session, ['ADMIN', 'OWNER']), payload);
+  if (action === 'adminSaveAnnouncement') return adminSaveAnnouncement_(requireRole_(session, ['ADMIN', 'OWNER']), payload);
+  if (action === 'adminSaveCampaign') return adminSaveCampaign_(requireRole_(session, ['ADMIN', 'OWNER']), payload);
+  if (action === 'adminSavePaymentAccount') return adminSavePaymentAccount_(requireRole_(session, ['ADMIN', 'OWNER']), payload);
+  if (action === 'adminSetEntityActive') return adminSetEntityActive_(requireRole_(session, ['ADMIN', 'OWNER']), payload);
+  if (action === 'adminSaveStatuses') return adminSaveStatuses_(requireRole_(session, ['ADMIN', 'OWNER']), payload);
+  if (action === 'adminModerateReview') return adminModerateReview_(requireRole_(session, ['ADMIN', 'OWNER']), payload);
   if (action === 'adminReviewPayment') return adminReviewPayment_(requireRole_(session, ['ADMIN', 'OWNER']), payload, requestId);
   if (action === 'adminTransitionOrder') return adminTransitionOrder_(requireRole_(session, ['ADMIN', 'OWNER']), payload, requestId);
   if (action === 'adminSendMessage') return adminSendMessage_(requireRole_(session, ['ADMIN', 'OWNER']), payload, requestId);
