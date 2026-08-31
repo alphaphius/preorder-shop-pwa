@@ -1,66 +1,92 @@
 # Preorder Shop PWA
 
-เว็บร้านค้า mobile-first สำหรับสินค้าพร้อมส่งและ Pre-order แยกคำสั่งซื้อ ใช้ GitHub Pages, Google Apps Script, Google Sheets และ Google Drive
+เว็บร้านค้าสำหรับสินค้าพร้อมส่งและ Pre-order แยกคำสั่งซื้อ ใช้ Google Sheets เป็นฐานข้อมูล, Google Apps Script เป็น API และ GitHub Pages เป็นหน้าเว็บ
+
+## เริ่มใช้งานแบบเร็ว
+
+ทำตามลำดับนี้เพื่อติดตั้งร้านของตัวเอง โดยไม่ต้องสร้าง Google Sheet ใหม่
+
+1. เปิด [Google Sheet template](https://docs.google.com/spreadsheets/d/1HyTD-yyjdhJlxx3_gImctnRGMkovkEVGGRwwXPHLG80/copy) แล้วกด **Make a copy** เพื่อเก็บ Sheet ไว้ใน Google Drive ของตนเอง
+2. กลับมาที่ Sheet ที่ copy แล้ว reload หนึ่งครั้ง จากแถบเมนูด้านบนเลือก **Preorder Shop** > **สร้าง/อัปเดตฐานข้อมูล** (Setup Database) และอนุญาตสิทธิ์ตามที่ Google ขอ ระบบจะสร้างแท็บฐานข้อมูลและโฟลเดอร์ Drive ที่จำเป็นใน Sheet เดิมอย่างปลอดภัย
+3. เลือก **Extensions** > **Apps Script** เพื่อเปิด Apps Script editor
+4. ใน Apps Script ให้เลือก **Deploy** > **New deployment** > **Web app** แล้วตั้งค่า:
+   - Execute as: **Me**
+   - Who has access: **Anyone**
+5. กด **Deploy** อนุญาตสิทธิ์ แล้วคัดลอก URL ที่ลงท้ายด้วย `/exec` เก็บไว้ เช่น `https://script.google.com/macros/s/.../exec`
+6. สมัครหรือเข้าสู่ระบบ [GitHub](https://github.com/) แล้วกด **Use this template** บน repository นี้ เพื่อสร้าง repository ของร้านตนเอง
+7. เปิดไฟล์ [`public/runtime-config.js`](public/runtime-config.js) ใน GitHub แล้วกดแก้ไขค่า `webAppUrl` เป็น URL `/exec` จากข้อ 5 จากนั้นกด **Commit changes**
+8. ไปที่ **Settings** > **Pages** ของ repository แล้วเลือก Source เป็น **GitHub Actions** ระบบจะ build และ deploy ให้อัตโนมัติทุกครั้งที่ push/commit เข้า `main`
+9. รอ workflow `Deploy GitHub Pages` สำเร็จ แล้วเปิด URL ที่แสดงใน **Settings** > **Pages** เพื่อใช้งานร้าน
+
+> สำคัญ: ใช้ URL ที่ลงท้าย `/exec` เท่านั้น ห้ามใช้ `/dev` และไม่ควรนำ URL ของร้านอื่นมาใช้ร่วมกัน
+
+## หลังติดตั้งครั้งแรก
+
+1. เปิดหน้าเว็บ GitHub Pages ของร้าน
+2. ล็อกอินด้วย Email OTP ของ Owner ที่ตั้งค่าไว้จาก Sheet
+3. เปิด **บัญชี** > **หลังบ้าน** > **ตั้งค่าร้านและหน้าโหลด** เพื่อเปลี่ยนชื่อร้าน โลโก้ สี และข้อความหน้าเปิด
+4. เพิ่มอีเมลผู้ดูแลใน **ผู้ดูแลระบบ** ก่อนให้บุคคลนั้นล็อกอินด้วย OTP
+5. เพิ่มสินค้า บัญชีรับเงิน สถานะออเดอร์ และรอบ Pre-order ก่อนเปิดขายจริง
 
 ## คุณสมบัติ
 
-- Email OTP, session แบบหมดอายุ และบทบาท Customer/Admin/Owner
-- พักสต็อกหรือโควตา 20 นาทีแบบ server-locked ป้องกัน oversell
+- Email OTP และบทบาท Customer/Admin/Owner
+- พักสต็อกหรือโควตา 20 นาทีแบบ server-locked เพื่อป้องกัน oversell
 - อัปโหลดสลิป ตรวจสอบการชำระเงิน และประวัติสถานะ
 - รอบ Pre-order, มัดจำ, ยอดคงเหลือ และเงื่อนไขแบบมีเวอร์ชัน
 - สินค้า หมวดหมู่ รูปหลายรูป ประกาศ รายการโปรด รีวิว แต้ม และ Feature Flags
 - ไทย/อังกฤษ, System/Light/Dark/High Contrast และสีแบรนด์จาก Admin
-- PWA ติดตั้งได้ แคช shell/draft และไม่อนุญาต checkout ขณะออฟไลน์
-- งานอีเมลแบบ durable queue พร้อม retry และหน้า Admin
+- รองรับมือถือ, iPad และ desktop พร้อม PWA, cache shell และ draft
+- Dashboard, ตาราง/การ์ดออเดอร์, export ข้อมูล และงานอีเมลแบบ background queue
 
 ## อุปกรณ์และเบราว์เซอร์
 
-รองรับ iPhone/iPad Safari, Android Chrome, macOS Safari/Chrome/Firefox และ Windows Edge/Chrome/Firefox รุ่นปัจจุบัน ตรวจช่วงหน้าจอ 320px ถึง desktop
+รองรับ iPhone/iPad Safari, Android Chrome, macOS Safari/Chrome/Firefox และ Windows Edge/Chrome/Firefox รุ่นปัจจุบัน
 
-## สิ่งที่ต้องมี
+บน Android สามารถติดตั้งแอปจากเมนูของเบราว์เซอร์ เช่น **Install app** หรือ **Add to Home screen** ได้โดยตรง จึงไม่มีปุ่มติดตั้งในหน้าเว็บ
+
+## แก้ไข Config บน GitHub
+
+เปิด [`public/runtime-config.js`](public/runtime-config.js) แล้วแก้เฉพาะค่าในตัวอย่างนี้:
+
+```js
+window.PREORDER_SHOP_CONFIG = window.PREORDER_SHOP_CONFIG || {
+  webAppUrl: 'วาง-Google-Apps-Script-Web-App-URL-ที่ลงท้ายด้วย-/exec-ที่นี่'
+}
+```
+
+เมื่อกด Commit แล้ว GitHub Actions จะ deploy หน้าเว็บใหม่ให้เอง ไม่ต้องวาง Script ID, Sheet ID, รหัสผ่าน หรือ token ในไฟล์นี้
+
+## สำหรับผู้ที่พัฒนาในเครื่อง
+
+### สิ่งที่ต้องมี
 
 - Node.js 22+
 - Git และบัญชี GitHub
-- Google Sheet ที่สร้าง Apps Script แบบ container-bound แล้ว
-- `clasp` และ `gh` CLI สำหรับ deploy ผ่านคำสั่งช่วยเหลือ
+- Google Sheet template ที่ copy แล้ว
+- `clasp` สำหรับ push Apps Script (เฉพาะกรณีแก้ไขโค้ดฝั่ง Apps Script)
 
-## เริ่มต้นบน macOS หรือ Windows Terminal/PowerShell
+### macOS / Windows Terminal / PowerShell
 
 ```text
 git clone <your-repository-url>
 cd preorder-shop-pwa
 npm install
-npm run setup:apps-script
 npm run verify
 ```
 
 คำสั่ง Node รองรับ path ที่มีช่องว่างและชื่อภาษาไทย ไม่ต้องใช้ Bash, `sed` หรือ `awk`
 
-## Google Sheet และ Apps Script
+หากแก้ Apps Script จากเครื่อง ให้ตั้งค่า Script ID ของ Sheet ที่ copy ด้วย:
 
-1. เปิด Google Sheet ที่เป็นเจ้าของ Apps Script
-2. ตั้งค่า `.clasp.json` ผ่าน `npm run setup:apps-script` ไฟล์นี้ถูก gitignore
-3. รัน `npm run deploy:api` เพื่อ push source
-4. Reload Google Sheet แล้วเลือก `Preorder Shop > สร้าง/อัปเดตฐานข้อมูล`
-5. อนุญาต Sheets, Drive, Mail และ Trigger
-6. `setupSystem()` จะใช้ Sheet เดิม ไม่สร้าง Spreadsheet ใหม่ และบันทึก Sheet ID จริงลง Script Properties กับ `Settings:spreadsheetId`
-7. เลือก `Preorder Shop > ตั้งค่า Owner จากบัญชีปัจจุบัน`
-8. Deploy เป็น Web App: Execute as “Me”, access “Anyone” แล้วคัดลอก URL `/exec`
+```text
+npm run setup:apps-script
+npm run deploy:api
+```
 
-Sheet ID, Script ID, Drive ID, session และ OAuth credentials ต้องไม่ commit ส่วน Web App URL `/exec` ของระบบนี้กำหนดไว้ใน `public/runtime-config.js` เพื่อให้ GitHub Pages เชื่อมต่ออัตโนมัติ ทั้งนี้ URL ไม่ใช่สิทธิ์เข้าถึงและ API ยังตรวจ session ทุกคำสั่งที่ได้รับการป้องกัน
+จากนั้นกลับไปที่ Google Sheet, reload หนึ่งครั้ง, รัน **Preorder Shop** > **สร้าง/อัปเดตฐานข้อมูล** เมื่อมีการเปลี่ยน schema และ deploy/redeploy Web App เพื่อรับ URL `/exec` ล่าสุด
 
-## เชื่อมต่อหน้าเว็บ
-
-เปิดหน้าเว็บครั้งแรก วาง Web App URL `/exec` ระบบจะตรวจ:
-
-- API/schema version และ server time
-- สิทธิ์การเข้าถึง
-- POST redirect/response
-- เขียน อ่าน และล้าง diagnostic record แบบ idempotent
-
-Web App URL ถูกกำหนดใน `public/runtime-config.js` สำหรับ single-store deployment นี้ ผู้ใช้งานจึงไม่ต้องกรอก URL เอง หน้า setup จะปรากฏเฉพาะเมื่อ Config หายหรือการเชื่อมต่อไม่พร้อม
-
-## Deploy GitHub Pages
+### Deploy หน้าเว็บจากเครื่อง
 
 ```text
 npm run verify
@@ -68,34 +94,28 @@ npm run deploy:web
 git push origin main
 ```
 
-เปิด Pages ใน Repository Settings แบบ GitHub Actions ระบบคำนวณ base path ของ repository อัตโนมัติ สำหรับ custom domain ให้ build ด้วย `CUSTOM_DOMAIN=true`
+หลัง push ให้ตรวจ workflow `Deploy GitHub Pages` จนสำเร็จ หากใช้ custom domain ให้ build ด้วย `CUSTOM_DOMAIN=true`
 
-## PWA และ Offline
+## Google Sheets, Apps Script และความปลอดภัย
 
-- ติดตั้งจากเมนู Add to Home Screen/Install App
+- `Setup Database` ใช้ Sheet ที่ copy เดิม ไม่สร้าง Spreadsheet ใหม่ และสามารถรันซ้ำได้โดยไม่ลบข้อมูลร้าน
+- อนุญาตสิทธิ์ที่จำเป็นสำหรับ Sheets, Drive, Mail และ Trigger ในบัญชีเจ้าของร้าน
+- ห้ามแชร์ Spreadsheet หรือโฟลเดอร์ Drive เป็นสาธารณะ
+- Web App URL ไม่ใช่สิทธิ์เข้าถึง: API ตรวจ session และบทบาททุกคำสั่งที่ได้รับการป้องกัน
+- ห้าม commit `.clasp.json`, OAuth credential, session, Sheet ID หรือข้อมูลลูกค้าจริง
+
+## PWA, Offline และการแจ้งเตือน
+
 - แคชเฉพาะ app shell และ static assets ไม่แคช API response หรือ payment acknowledgement
-- ดู storefront ที่เคยเปิดและเก็บ draft ได้ออฟไลน์
-- การยืนยันออเดอร์และส่งสลิปต้องออนไลน์เพื่อตรวจสต็อกและ deadline จากเซิร์ฟเวอร์
+- ดู storefront ที่เคยเปิดและเก็บ draft ได้ออฟไลน์ แต่การยืนยันออเดอร์และส่งสลิปต้องออนไลน์
+- การแจ้งเตือนในเวอร์ชันนี้ทำงานขณะเปิดเว็บ/แอปอยู่ หากต้องการแจ้งเตือนขณะปิดแอป ต้องตั้งค่า Web Push provider เช่น FCM เพิ่มเติม
 - หากมีเวอร์ชันใหม่ ให้ reload หลังบันทึก draft/งานค้างเรียบร้อย
 
-## Email และงานเบื้องหลัง
-
-OTP ถูกส่งใน request path เพราะจำเป็นต่อการเข้าสู่ระบบ อีเมลสถานะและข้อความร้านถูกสร้างเป็น `JobQueue` แล้วให้ Trigger ประมวลผล การบันทึกออเดอร์ยังสำเร็จได้แม้อีเมลล่าช้าหรือล้มเหลว
-
-## สำรองข้อมูลและความปลอดภัย
+## สำรองข้อมูลและแก้ปัญหา
 
 - สำรอง Spreadsheet และโฟลเดอร์ Drive ตามนโยบายร้าน
-- ห้ามแชร์ Sheet/Drive folder เป็นสาธารณะ
-- Web App URL ไม่ใช่สิทธิ์เข้าถึง ทุก protected action ตรวจ opaque session
-- OTP มีอายุ 10 นาที จำกัดครั้งขอ/ลอง และเก็บเฉพาะ salted hash
-- ตรวจ `AuditLog`, `SecurityLog`, `MutationLog` และ `JobQueue` เป็นประจำ
-- เมื่อปริมาณรายการย่อยเกินประมาณ 100,000 แถวหรือ concurrent writes สูง ให้ประเมินย้ายฐานข้อมูล
-
-## แก้ปัญหา
-
-- `SCHEMA_NOT_READY`: เปิด Sheet แล้วรัน `setupSystem()`
-- URL ไม่ผ่าน: ต้องเป็น Web App `/exec` ไม่ใช่ `/dev`
-- OTP ไม่เข้า: ดู Mail quota และ `SecurityLog`
-- ออเดอร์หมดเวลา: สร้างใหม่ ระบบจะคืน reservation ผ่าน request validation และ Trigger
+- `SCHEMA_NOT_READY`: กลับไปที่ Sheet แล้วรัน **Setup Database**
+- URL ไม่ผ่าน: ตรวจว่าเป็น Web App URL `/exec` ไม่ใช่ `/dev`
+- OTP ไม่เข้า: ตรวจ Mail quota และ `SecurityLog`
 - Email สถานะไม่เข้า: ดู `JobQueue.lastError` แล้วประมวลผลงานค้างอีกครั้ง
-- GitHub Pages asset 404: ตรวจ Pages workflow และ base path จากชื่อ repository
+- GitHub Pages asset 404: ตรวจว่า Settings > Pages เลือก **GitHub Actions** และ workflow สำเร็จ
