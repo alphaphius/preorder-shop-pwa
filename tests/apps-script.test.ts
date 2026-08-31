@@ -30,7 +30,7 @@ describe('Apps Script contract', () => {
   it('keeps slips private while supporting in-app viewing and safe public content media',()=>{
     expect(source).toContain('function adminFile_')
     expect(source).toContain('function publicMedia_')
-    expect(source).toContain("['PRODUCT_IMAGE','ANNOUNCEMENT_IMAGE','BLOG_IMAGE']")
+    expect(source).toContain("'SHOP_LOGO'")
     expect(source).not.toContain('drive.google.com/open?id=')
   })
   it('provides analytics and rich content fields',()=>{
@@ -38,5 +38,11 @@ describe('Apps Script contract', () => {
     expect(source).toContain('productSales')
     expect(source).toContain('contentJson')
     expect(source).toContain('productIdsJson')
+  })
+  it('supports remembered sessions and role-aware notification polling',()=>{
+    expect(source).toContain('rememberDevice ? 24 * 30')
+    expect(source).toContain('function notificationFeed_')
+    expect(source).toContain("kind:'ORDER_CREATED'")
+    expect(source).toContain("kind:'PAYMENT_SUBMITTED'")
   })
 })

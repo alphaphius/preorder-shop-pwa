@@ -35,7 +35,7 @@ export class ApiClient {
   storefront(locale = 'th') { return this.get<StorefrontData>('storefront', { locale }) }
   connectionTest() { return this.post<{ health: boolean; roundTrip: boolean }>('connectionTest') }
   requestOtp(email: string) { return this.post<{ expiresAt: string; maskedEmail: string }>('requestOtp', { email }) }
-  verifyOtp(email: string, code: string) { return this.post<SessionInfo>('verifyOtp', { email, code }) }
+  verifyOtp(email: string, code: string, rememberDevice = true) { return this.post<SessionInfo>('verifyOtp', { email, code, rememberDevice }) }
   me(session: string) { return this.post<UserProfile>('me', {}, session) }
   createReservation(session: string, lines: { productId: string; quantity: number }[], termsAcceptance?: { termsId: string; version: number }, redeemPoints = 0, shipping: Record<string,string> = {}) { return this.post<ReservationResult>('createReservation', { lines, termsAcceptance, redeemPoints, shipping }, session) }
   uploadSlip(session: string, payload: { orderId: string; amount: number; accountId: string; transferAt: string; fileName: string; mimeType: string; base64: string }) { return this.post<{ order: OrderSummary; paymentId: string; emailJobId: string }>('uploadSlip', payload, session) }
@@ -47,6 +47,7 @@ export class ApiClient {
   createReview(session: string, productId: string, rating: number, body: string) { return this.post<ProductReview>('createReview', { productId, rating, body }, session) }
   listNotifications(session: string) { return this.post<UserNotification[]>('listNotifications', {}, session) }
   readNotification(session: string, id: string) { return this.post<UserNotification>('readNotification', { id }, session) }
+  notificationFeed(session:string,since:string){return this.post<{events:Array<{id:string;kind:string;titleTh:string;titleEn:string;bodyTh:string;bodyEn:string;createdAt:string}>;cursor:string}>('notificationFeed',{since},session)}
   adminDashboard(session: string) { return this.post<AdminDashboard>('adminDashboard', {}, session) }
   adminWorkspace(session: string) { return this.post<AdminWorkspace>('adminWorkspace', {}, session) }
   adminConfiguration(session: string) { return this.post<AdminConfiguration>('adminConfiguration', {}, session) }
@@ -63,6 +64,6 @@ export class ApiClient {
   adminTransitionOrder(session: string, orderId: string, status: string, note = '') { return this.post<Record<string, unknown>>('adminTransitionOrder', { orderId, status, note }, session) }
   adminSendMessage(session: string, orderId: string, bodyTh: string, bodyEn = '', sendEmail = true) { return this.post<Record<string, unknown>>('adminSendMessage', { orderId, bodyTh, bodyEn, sendEmail }, session) }
   adminModerateReview(session: string, id: string, approved: boolean, adminReply = '') { return this.post<Record<string, unknown>>('adminModerateReview', { id, approved, adminReply }, session) }
-  adminUploadMedia(session:string,payload:{kind:'PRODUCT_IMAGE'|'ANNOUNCEMENT_IMAGE'|'BLOG_IMAGE';fileName:string;mimeType:string;base64:string}){return this.post<{id:string;ref:string;fileName:string;mimeType:string;size:number}>('adminUploadMedia',payload,session)}
+  adminUploadMedia(session:string,payload:{kind:'PRODUCT_IMAGE'|'ANNOUNCEMENT_IMAGE'|'BLOG_IMAGE'|'SHOP_LOGO';fileName:string;mimeType:string;base64:string}){return this.post<{id:string;ref:string;fileName:string;mimeType:string;size:number}>('adminUploadMedia',payload,session)}
   adminFile(session:string,id:string){return this.post<{id:string;fileName:string;mimeType:string;base64:string}>('adminFile',{id},session)}
 }

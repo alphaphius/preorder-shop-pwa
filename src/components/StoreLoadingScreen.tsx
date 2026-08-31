@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, type CSSProperties } from 'react'
 import gsap from 'gsap'
 import type { Locale } from '../domain/types'
+import { MediaImage } from './MediaImage'
 
 export function StoreLoadingScreen({ locale, storeName, title, kicker, message, logoUrl, error, onRetry }: { locale: Locale; storeName: string; title?: string; kicker?: string; message?: string; logoUrl?: string; error?: string; onRetry: () => void }) {
   const root = useRef<HTMLElement>(null)
@@ -27,7 +28,7 @@ export function StoreLoadingScreen({ locale, storeName, title, kicker, message, 
           {[0, 60, 120, 180, 240, 300].map((angle) => <span key={angle} className="loader-petal" style={{ '--petal-angle': `${angle}deg` } as CSSProperties} />)}
         </div>
         <div className="loader-orbit loader-orbit-inner"><i /><i /><i /></div>
-        <div className="loader-core">{logoUrl ? <img src={logoUrl} alt="" /> : <span>{initial}</span>}</div>
+        <div className={`loader-core ${logoUrl?'has-logo':''}`}>{logoUrl ? <MediaImage src={logoUrl} alt="" loading="eager"/> : <span>{initial}</span>}</div>
       </div>
       <div className="loading-copy">
         <span className="loading-kicker">{kicker || (locale === 'th' ? 'ยินดีต้อนรับสู่' : 'Welcome to')}</span>

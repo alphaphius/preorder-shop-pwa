@@ -23,7 +23,7 @@ function requestOtp_(rawEmail) {
   securityLog_(email, 'OTP_SENT', 'Login code queued'); return { expiresAt: expiresAt, maskedEmail: maskEmail_(email) };
 }
 
-function verifyOtp_(rawEmail, rawCode) {
+function verifyOtp_(rawEmail, rawCode, rememberDevice) {
   var email = normalizeEmail_(rawEmail); var code = String(rawCode || '').trim(); if (!/^\d{6}$/.test(code)) throw apiError_('INVALID_OTP', 'รหัสยืนยันไม่ถูกต้องหรือหมดอายุ');
   var rows = findAll_('OtpCodes', 'email', email).filter(function(record) { return record.purpose === 'LOGIN' && !record.consumedAt; }).sort(function(a, b) { return String(b.createdAt).localeCompare(String(a.createdAt)); }); var otp = rows[0];
   if (!otp || new Date(otp.expiresAt).getTime() < Date.now() || Number(otp.attempts || 0) >= 5) { securityLog_(email, 'OTP_INVALID', 'Expired or missing'); throw apiError_('INVALID_OTP', 'รหัสยืนยันไม่ถูกต้องหรือหมดอายุ'); }
@@ -32,11 +32,11 @@ function verifyOtp_(rawEmail, rawCode) {
   var user = findOne_('Users', 'email', email); var ownerEmail = String(PropertiesService.getScriptProperties().getProperty('INITIAL_OWNER_EMAIL') || '').toLowerCase();
   if (!user) user = insert_('Users', { email: email, displayName: email.split('@')[0], role: email === ownerEmail ? 'OWNER' : 'CUSTOMER', status: 'ACTIVE', locale: 'th', pointsBalance: 0 });
   if (user.status !== 'ACTIVE') throw apiError_('ACCOUNT_DISABLED', 'บัญชีนี้ถูกระงับ กรุณาติดต่อร้านค้า');
-  var session = issueSession_(user); securityLog_(email, 'LOGIN_SUCCESS', user.role); return session;
+  var session = issueSession_(user, rememberDevice === true); securityLog_(email, 'LOGIN_SUCCESS', user.role); return session;
 }
 
-function issueSession_(user) {
-  var token = secureToken_(); var expiresAt = new Date(Date.now() + SESSION_TTL_HOURS * 3600000).toISOString();
+function issueSession_(user, rememberDevice) {
+  var hours = rememberDevice ? 24 * 30 : SESSION_TTL_HOURS; var token = secureToken_(); var expiresAt = new Date(Date.now() + hours * 3600000).toISOString();
   insert_('Sessions', { userId: user.id, tokenHash: digest_(token), role: user.role, expiresAt: expiresAt, privilegedUntil: ['OWNER','ADMIN'].indexOf(user.role) >= 0 ? new Date(Date.now() + 15 * 60000).toISOString() : '', revokedAt: '' });
   return { token: token, expiresAt: expiresAt, user: publicUser_(user) };
 }

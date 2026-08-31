@@ -27,7 +27,7 @@ function doPost(e) {
 function route_(action, payload, token, requestId) {
   if (action === 'connectionTest') return connectionTest_();
   if (action === 'requestOtp') return requestOtp_(payload.email);
-  if (action === 'verifyOtp') return verifyOtp_(payload.email, payload.code);
+  if (action === 'verifyOtp') return verifyOtp_(payload.email, payload.code, payload.rememberDevice);
   var session = requireSession_(token);
   if (action === 'me') return publicUser_(session.user);
   if (action === 'createReservation') return createReservation_(session, payload, requestId);
@@ -38,6 +38,7 @@ function route_(action, payload, token, requestId) {
   if (action === 'createReview') return createReview_(session, payload);
   if (action === 'listNotifications') return listNotifications_(session);
   if (action === 'readNotification') return readNotification_(session, payload.id);
+  if (action === 'notificationFeed') return notificationFeed_(session, payload.since);
   if (action === 'adminDashboard') return adminDashboard_(requireRole_(session, ['ADMIN', 'OWNER']));
   if (action === 'adminWorkspace') return adminWorkspace_(requireRole_(session, ['ADMIN', 'OWNER']));
   if (action === 'adminConfiguration') return adminConfiguration_(requireRole_(session, ['ADMIN', 'OWNER']));

@@ -1,4 +1,4 @@
-const VERSION = 'preorder-shop-shell-v3'
+const VERSION = 'preorder-shop-shell-v4'
 const scopeUrl = new URL(self.registration.scope)
 const asset = (name) => new URL(name, scopeUrl).toString()
 const SHELL = [asset(''), asset('index.html'), asset('manifest.webmanifest'), asset('icon.svg'), asset('icon-192.png'), asset('icon-512.png'), asset('runtime-config.js')]
@@ -26,3 +26,4 @@ self.addEventListener('fetch', (event) => {
     return response
   })))
 })
+self.addEventListener('notificationclick',(event)=>{event.notification.close();const target=new URL(event.notification.data?.url||'#/orders',self.registration.scope).toString();event.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then((windows)=>{const existing=windows[0];if(existing){existing.focus();existing.navigate(target);return}return clients.openWindow(target)}))})

@@ -11,10 +11,13 @@ import { AuthDialog } from '../pages/AuthDialog'
 import { AnnouncementPage, StorefrontPage, ProductPage } from '../pages/StorePages'
 import { CartPage, PaymentPage } from '../pages/CheckoutPages'
 import { OrdersPage, ProfilePage } from '../pages/AccountPages'
+import { useNotifications } from '../pwa/useNotifications'
 const AdminPage=lazy(()=>import('../pages/AdminPage').then(module=>({default:module.AdminPage})))
 
 type CartState = Record<ProductType, CartLine[]>
 const emptyCart: CartState = { READY: [], PREORDER: [] }
+const readStoredSession=()=>{for(const storage of [localStorage,sessionStorage]){try{const value=JSON.parse(storage.getItem('shop.session')||'null') as SessionInfo|null;if(value&&new Date(value.expiresAt).getTime()>Date.now())return value}catch{/* ignore invalid local data */}}return null}
+const saveStoredSession=(value:SessionInfo,remember?:boolean)=>{const persistent=remember??Boolean(localStorage.getItem('shop.session'));localStorage.removeItem('shop.session');sessionStorage.removeItem('shop.session');(persistent?localStorage:sessionStorage).setItem('shop.session',JSON.stringify(value))}
 const routeFromHash = (): { route: Route; id?: string } => {
   const [route = 'home', id] = location.hash.replace(/^#\/?/, '').split('/')
   const allowed: Route[] = ['home', 'favorites', 'cart', 'orders', 'profile', 'product', 'announcement', 'payment', 'preorder', 'order-detail', 'admin']
@@ -31,7 +34,7 @@ export default function App() {
   const [error, setError] = useState('')
   const [online, setOnline] = useState(navigator.onLine)
   const [locationState, setLocationState] = useState(routeFromHash)
-  const [session, setSession] = useState<SessionInfo | null>(() => { try { return JSON.parse(sessionStorage.getItem('shop.session') || 'null') } catch { return null } })
+  const [session, setSession] = useState<SessionInfo | null>(readStoredSession)
   const [showAuth, setShowAuth] = useState(false)
   const [carts, setCarts] = useState<CartState>(emptyCart)
   const [activeCartType, setActiveCartType] = useState<ProductType>('READY')
@@ -40,6 +43,7 @@ export default function App() {
   const [loadAttempt, setLoadAttempt] = useState(0)
   const [favoriteIds, setFavoriteIds] = useState<string[]>([])
   const api = useMemo(() => endpoint ? new ApiClient(endpoint) : null, [endpoint])
+  const notifications=useNotifications({api,session,locale})
 
   useEffect(() => {
     loadCart().then((lines) => {
@@ -78,8 +82,8 @@ export default function App() {
   useEffect(() => {
     if (!api || !session?.token || demo) return
     api.me(session.token).then((user) => {
-      const refreshed = { ...session, user }; sessionStorage.setItem('shop.session', JSON.stringify(refreshed)); setSession((current) => current && current.user.role === user.role && current.user.email === user.email ? current : refreshed)
-    }).catch(() => { sessionStorage.removeItem('shop.session'); setSession(null); setFavoriteIds([]) })
+      const refreshed = { ...session, user }; saveStoredSession(refreshed); setSession((current) => current && current.user.role === user.role && current.user.email === user.email ? current : refreshed)
+    }).catch(() => { localStorage.removeItem('shop.session');sessionStorage.removeItem('shop.session'); setSession(null); setFavoriteIds([]) })
   }, [api, session?.token, demo])
   useEffect(() => {
     if (!api || !session?.token || demo) return
@@ -115,11 +119,12 @@ export default function App() {
     if (!api || !session) return
     const result = await api.createReservation(session.token, carts[type], termsAcceptance, redeemPoints, shipping)
     setPendingOrder(result.order); persistCarts({ ...carts, [type]: [] });
-    try { const user=await api.me(session.token);const refreshed={...session,user};sessionStorage.setItem('shop.session',JSON.stringify(refreshed));setSession(refreshed) } catch { /* order is already reserved; profile can refresh later */ }
+    try { const user=await api.me(session.token);const refreshed={...session,user};saveStoredSession(refreshed);setSession(refreshed) } catch { /* order is already reserved; profile can refresh later */ }
     navigate('payment', result.order.id)
   }
-  const onAuthenticated = (next: SessionInfo) => { sessionStorage.setItem('shop.session', JSON.stringify(next)); setSession(next); setShowAuth(false); flash(locale === 'th' ? 'เข้าสู่ระบบแล้ว' : 'Signed in') }
-  const signOut = () => { sessionStorage.removeItem('shop.session'); setSession(null); setFavoriteIds([]); navigate('home') }
+  const onAuthenticated = (next: SessionInfo,rememberDevice:boolean) => { saveStoredSession(next,rememberDevice); setSession(next); setShowAuth(false); flash(locale === 'th' ? 'เข้าสู่ระบบแล้ว' : 'Signed in') }
+  const signOut = () => { localStorage.removeItem('shop.session');sessionStorage.removeItem('shop.session'); setSession(null); setFavoriteIds([]); navigate('home') }
+  const handleNotifications=async()=>{if(!session){setShowAuth(true);return}if(!notifications.enabled){const granted=await notifications.enable();flash(granted?(locale==='th'?'เปิดการแจ้งเตือนแล้ว':'Notifications enabled'):(locale==='th'?'เบราว์เซอร์ไม่อนุญาตการแจ้งเตือน':'Notification permission was not granted'));return}notifications.clearCount();navigate(['ADMIN','OWNER'].includes(session.user.role)?'admin':'profile')}
   const toggleFavorite = async (productId: string) => {
     if (!data?.settings.favoritesEnabled) return
     if (demo) { setFavoriteIds((current) => current.includes(productId) ? current.filter((id) => id !== productId) : [...current, productId]); return }
@@ -148,7 +153,7 @@ export default function App() {
   else page = <StorefrontPage {...common} favoritesOnly={locationState.route === 'favorites'} />
 
   return <>
-    <AppShell data={data} locale={locale} setLocale={setLocale} route={locationState.route} navigate={navigate} cartCount={[...carts.READY, ...carts.PREORDER].reduce((sum, line) => sum + line.quantity, 0)} online={online} session={session}>{page}</AppShell>
+    <AppShell data={data} locale={locale} setLocale={setLocale} route={locationState.route} navigate={navigate} cartCount={[...carts.READY, ...carts.PREORDER].reduce((sum, line) => sum + line.quantity, 0)} online={online} session={session} notificationCount={notifications.count} notificationsEnabled={notifications.enabled} onNotifications={handleNotifications}>{page}</AppShell>
     {showAuth && api && <AuthDialog locale={locale} api={api} onClose={() => setShowAuth(false)} onAuthenticated={onAuthenticated} />}
     {showAuth && demo && <AuthDialog locale={locale} onClose={() => setShowAuth(false)} onAuthenticated={onAuthenticated} />}
     {toast && <div className="status-capsule" role="status">{toast}</div>}
