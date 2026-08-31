@@ -57,6 +57,14 @@ window.PREORDER_SHOP_CONFIG = window.PREORDER_SHOP_CONFIG || {
 
 เมื่อกด Commit แล้ว GitHub Actions จะ deploy หน้าเว็บใหม่ให้เอง ไม่ต้องวาง Script ID, Sheet ID, รหัสผ่าน หรือ token ในไฟล์นี้
 
+## เปลี่ยนชื่อร้าน ชื่อแอป และ URL
+
+- **ชื่อร้านที่ลูกค้าเห็น:** ล็อกอิน Owner แล้วไปที่ **บัญชี** > **หลังบ้าน** > **ตั้งค่าร้านและหน้าโหลด** จากนั้นแก้ `ชื่อร้าน (ไทย)` และ `Store name (English)` แล้วกดบันทึก ชื่อนี้จะแสดงใน header และหน้าโหลดทันที
+- **ชื่อแอปที่แสดงหลังติดตั้งลงโทรศัพท์:** แก้ `name` และ `short_name` ใน [`public/manifest.webmanifest`](public/manifest.webmanifest) แล้ว commit/push รอ Pages deploy จากนั้นเปิดแอปอีกครั้ง (บาง Android อาจต้องลบ shortcut เดิมและ Add to Home screen ใหม่เพื่อเห็นชื่อใหม่)
+- **ชื่อบนแท็บเบราว์เซอร์:** แก้ `<title>` ใน [`index.html`](index.html) แล้ว commit/push
+- **URL แบบ GitHub Pages:** ไปที่ repository > **Settings** > **General** > **Repository name** แล้วเปลี่ยนชื่อ repository URL จะกลายเป็น `https://<github-user>.github.io/<ชื่อ-repositoryใหม่>/` หลัง workflow deploy สำเร็จ ลิงก์เก่าจะใช้ไม่ได้ จึงควรแจ้งลูกค้าและอัปเดตลิงก์โซเชียล
+- **URL สั้นแบบชื่อร้าน:** ต้องมีโดเมนของตนเอง แล้วตั้งที่ **Settings** > **Pages** > **Custom domain** พร้อมเพิ่ม DNS record ตามที่ GitHub แนะนำ ก่อน build ให้ตั้ง `CUSTOM_DOMAIN=true`
+
 ## สำหรับผู้ที่พัฒนาในเครื่อง
 
 ### สิ่งที่ต้องมี
