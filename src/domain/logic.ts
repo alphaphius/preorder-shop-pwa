@@ -1,4 +1,4 @@
-import type { CartLine, Product, ProductType } from './types'
+import type { CartLine, Product, ProductType, ShopSettings } from './types'
 
 export const availableStock = (product: Pick<Product, 'stockOnHand' | 'reservedQuantity'>) => Math.max(0, product.stockOnHand - product.reservedQuantity)
 
@@ -20,6 +20,10 @@ export const cartTotal = (lines: CartLine[], products: Product[], depositOnly = 
   const unit = depositOnly && product.type === 'PREORDER' ? product.deposit : product.price
   return sum + unit * line.quantity
 }, 0)
+
+export const shippingTotal = (lines: CartLine[], products: Product[], settings: Pick<ShopSettings, 'shippingMode' | 'cartShippingFee'>) => settings.shippingMode === 'ITEM'
+  ? lines.reduce((sum, line) => sum + (products.find((product) => product.id === line.productId)?.shippingFee || 0) * line.quantity, 0)
+  : settings.cartShippingFee
 
 export const secondsRemaining = (expiresAt: string | undefined, serverNow = Date.now()) => !expiresAt ? 0 : Math.max(0, Math.ceil((new Date(expiresAt).getTime() - serverNow) / 1000))
 

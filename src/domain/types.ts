@@ -17,6 +17,15 @@ export interface ShopSettings {
   reservationMinutes: number
   currency: 'THB'
   shippingFee: number
+  shippingMode: 'CART' | 'ITEM'
+  cartShippingFee: number
+  loaderKickerTh: string
+  loaderKickerEn: string
+  loaderTitleTh: string
+  loaderTitleEn: string
+  loaderMessageTh: string
+  loaderMessageEn: string
+  loaderLogoUrl?: string
 }
 
 export interface Category { id: string; nameTh: string; nameEn: string; active: boolean; sortOrder: number }
@@ -29,6 +38,7 @@ export interface Product {
   descriptionTh: string
   descriptionEn: string
   price: number
+  shippingFee: number
   deposit: number
   stockOnHand: number
   reservedQuantity: number
@@ -68,6 +78,8 @@ export interface StorefrontData {
 }
 export interface SessionInfo { token: string; expiresAt: string; user: UserProfile }
 export interface UserProfile { id: string; email: string; displayName: string; role: UserRole; locale: Locale; pointsBalance: number }
+export interface AdminAccount { id: string; email: string; displayName: string; role: UserRole; status: string }
+export interface AdminConfiguration { settings: ShopSettings; admins: AdminAccount[] }
 export interface CartLine { productId: string; quantity: number }
 export interface OrderSummary {
   id: string

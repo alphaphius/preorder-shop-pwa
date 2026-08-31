@@ -22,4 +22,9 @@ describe('Apps Script contract', () => {
     expect(source).not.toContain('eval(')
     expect(source).not.toContain('google.script.run')
   })
+  it('protects admin configuration and supports favorites', () => {
+    expect(source).toContain("requireRole_(session, ['ADMIN', 'OWNER'])")
+    expect(source).toContain('function listFavorites_')
+    expect(source).toContain("requireRole_(context, ['OWNER'])")
+  })
 })

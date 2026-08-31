@@ -31,8 +31,12 @@ function route_(action, payload, token, requestId) {
   if (action === 'createReservation') return createReservation_(session, payload, requestId);
   if (action === 'uploadSlip') return uploadSlip_(session, payload, requestId);
   if (action === 'listOrders') return listOrders_(session);
+  if (action === 'listFavorites') return listFavorites_(session);
   if (action === 'toggleFavorite') return toggleFavorite_(session, payload.productId, requestId);
   if (action === 'adminDashboard') return adminDashboard_(requireRole_(session, ['ADMIN', 'OWNER']));
+  if (action === 'adminConfiguration') return adminConfiguration_(requireRole_(session, ['ADMIN', 'OWNER']));
+  if (action === 'adminSaveSettings') return adminSaveSettings_(requireRole_(session, ['ADMIN', 'OWNER']), payload);
+  if (action === 'adminAddAdmin') return adminAddAdmin_(session, payload);
   if (action === 'adminSaveProduct') return adminSaveProduct_(requireRole_(session, ['ADMIN', 'OWNER']), payload, requestId);
   if (action === 'adminReviewPayment') return adminReviewPayment_(requireRole_(session, ['ADMIN', 'OWNER']), payload, requestId);
   if (action === 'adminTransitionOrder') return adminTransitionOrder_(requireRole_(session, ['ADMIN', 'OWNER']), payload, requestId);

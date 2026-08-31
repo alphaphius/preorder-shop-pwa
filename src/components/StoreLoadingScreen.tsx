@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef, type CSSProperties } from 'react'
 import gsap from 'gsap'
 import type { Locale } from '../domain/types'
 
-export function StoreLoadingScreen({ locale, storeName, error, onRetry }: { locale: Locale; storeName: string; error?: string; onRetry: () => void }) {
+export function StoreLoadingScreen({ locale, storeName, title, kicker, message, logoUrl, error, onRetry }: { locale: Locale; storeName: string; title?: string; kicker?: string; message?: string; logoUrl?: string; error?: string; onRetry: () => void }) {
   const root = useRef<HTMLElement>(null)
   const initial = storeName.trim().charAt(0).toUpperCase() || 'M'
 
@@ -27,12 +27,12 @@ export function StoreLoadingScreen({ locale, storeName, error, onRetry }: { loca
           {[0, 60, 120, 180, 240, 300].map((angle) => <span key={angle} className="loader-petal" style={{ '--petal-angle': `${angle}deg` } as CSSProperties} />)}
         </div>
         <div className="loader-orbit loader-orbit-inner"><i /><i /><i /></div>
-        <div className="loader-core"><span>{initial}</span></div>
+        <div className="loader-core">{logoUrl ? <img src={logoUrl} alt="" /> : <span>{initial}</span>}</div>
       </div>
       <div className="loading-copy">
-        <span className="loading-kicker">{locale === 'th' ? 'ยินดีต้อนรับสู่' : 'Welcome to'}</span>
-        <h1>{storeName}</h1>
-        {!error ? <><p>{locale === 'th' ? 'กำลังจัดชั้นสินค้าให้คุณ' : 'Curating the shelves for you'}</p><div className="loading-dots" aria-hidden="true"><i className="loading-dot" /><i className="loading-dot" /><i className="loading-dot" /></div></> : <div className="loading-error"><p>{error}</p><button type="button" className="primary-button" onClick={onRetry}>{locale === 'th' ? 'ลองเชื่อมต่ออีกครั้ง' : 'Try again'}</button></div>}
+        <span className="loading-kicker">{kicker || (locale === 'th' ? 'ยินดีต้อนรับสู่' : 'Welcome to')}</span>
+        <h1>{title || storeName}</h1>
+        {!error ? <><p>{message || (locale === 'th' ? 'กำลังจัดชั้นสินค้าให้คุณ' : 'Curating the shelves for you')}</p><div className="loading-dots" aria-hidden="true"><i className="loading-dot" /><i className="loading-dot" /><i className="loading-dot" /></div></> : <div className="loading-error"><p>{error}</p><button type="button" className="primary-button" onClick={onRetry}>{locale === 'th' ? 'ลองเชื่อมต่ออีกครั้ง' : 'Try again'}</button></div>}
       </div>
     </section>
   </main>

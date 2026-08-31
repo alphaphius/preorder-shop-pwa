@@ -1,4 +1,4 @@
-import type { ApiEnvelope, OrderSummary, ReservationResult, SessionInfo, StorefrontData, UserProfile } from '../domain/types'
+import type { AdminAccount, AdminConfiguration, ApiEnvelope, OrderSummary, Product, ReservationResult, SessionInfo, ShopSettings, StorefrontData, UserProfile } from '../domain/types'
 
 const EXEC_URL = /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/
 export function normalizeEndpoint(raw: string) {
@@ -40,6 +40,11 @@ export class ApiClient {
   createReservation(session: string, lines: { productId: string; quantity: number }[], termsAcceptance?: { termsId: string; version: number }) { return this.post<ReservationResult>('createReservation', { lines, termsAcceptance }, session) }
   uploadSlip(session: string, payload: { orderId: string; amount: number; accountId: string; transferAt: string; fileName: string; mimeType: string; base64: string }) { return this.post<{ order: OrderSummary; paymentId: string; emailJobId: string }>('uploadSlip', payload, session) }
   listOrders(session: string) { return this.post<OrderSummary[]>('listOrders', {}, session) }
+  listFavorites(session: string) { return this.post<string[]>('listFavorites', {}, session) }
   toggleFavorite(session: string, productId: string) { return this.post<{ active: boolean }>('toggleFavorite', { productId }, session) }
   adminDashboard(session: string) { return this.post<Record<string, number>>('adminDashboard', {}, session) }
+  adminConfiguration(session: string) { return this.post<AdminConfiguration>('adminConfiguration', {}, session) }
+  adminSaveSettings(session: string, settings: Partial<ShopSettings>) { return this.post<ShopSettings>('adminSaveSettings', settings, session) }
+  adminAddAdmin(session: string, email: string, displayName = '') { return this.post<AdminAccount>('adminAddAdmin', { email, displayName }, session) }
+  adminSaveProduct(session: string, product: Product) { return this.post<Product>('adminSaveProduct', product, session) }
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { availableStock, canSubmitPayment, cartTotal, cartType, clampQuantity, formatCountdown, secondsRemaining } from '../src/domain/logic'
+import { availableStock, canSubmitPayment, cartTotal, cartType, clampQuantity, formatCountdown, secondsRemaining, shippingTotal } from '../src/domain/logic'
 import { mockStorefront } from '../src/mock/data'
 
 describe('commerce logic', () => {
@@ -10,6 +10,11 @@ describe('commerce logic', () => {
     const lines = [{ productId: 'p-4', quantity: 2 }]
     expect(cartTotal(lines, mockStorefront.products)).toBe(1380)
     expect(cartTotal(lines, mockStorefront.products, true)).toBe(500)
+  })
+  it('calculates cart-wide and per-item shipping', () => {
+    const lines = [{ productId: 'p-1', quantity: 2 }, { productId: 'p-3', quantity: 1 }]
+    expect(shippingTotal(lines, mockStorefront.products, { shippingMode: 'CART', cartShippingFee: 50 })).toBe(50)
+    expect(shippingTotal(lines, mockStorefront.products, { shippingMode: 'ITEM', cartShippingFee: 50 })).toBe(95)
   })
   it('uses server deadline for countdown', () => {
     expect(secondsRemaining('2026-08-30T10:01:40.000Z', Date.parse('2026-08-30T10:00:00.000Z'))).toBe(100)

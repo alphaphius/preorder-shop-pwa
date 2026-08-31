@@ -4,7 +4,7 @@ import gsap from 'gsap'
 import type { Locale, Route, SessionInfo, StorefrontData } from '../domain/types'
 
 interface Props { data: StorefrontData; locale: Locale; setLocale: (v: Locale) => void; route: Route; navigate: (route: Route) => void; cartCount: number; online: boolean; session: SessionInfo | null; children: React.ReactNode }
-export function AppShell({ data, locale, setLocale, route, navigate, cartCount, online, children }: Props) {
+export function AppShell({ data, locale, setLocale, route, navigate, cartCount, online, session, children }: Props) {
   const main = useRef<HTMLElement>(null)
   useLayoutEffect(() => {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches || !main.current) return
@@ -21,6 +21,7 @@ export function AppShell({ data, locale, setLocale, route, navigate, cartCount, 
         <span><strong>{name}</strong><small>{locale === 'th' ? 'เลือกของที่ชอบได้เลย' : 'Find something lovely'}</small></span>
       </button>
       <div className="top-actions">
+        {session && ['ADMIN', 'OWNER'].includes(session.user.role) && <button className="admin-chip" type="button" onClick={() => navigate('admin')}>{session.user.role}</button>}
         <button className="icon-button" type="button" onClick={() => setLocale(locale === 'th' ? 'en' : 'th')} aria-label="Change language">{locale.toUpperCase()}</button>
         <button className="icon-button" type="button" aria-label={locale === 'th' ? 'การแจ้งเตือน' : 'Notifications'}><Bell size={20} /></button>
       </div>
@@ -29,13 +30,13 @@ export function AppShell({ data, locale, setLocale, route, navigate, cartCount, 
     <nav className="bottom-nav" aria-label={locale === 'th' ? 'เมนูหลัก' : 'Main navigation'}>
       <Nav active={route === 'home' || route === 'product'} onClick={() => navigate('home')} icon={<House />} label={locale === 'th' ? 'หน้าแรก' : 'Home'} />
       <Nav active={false} onClick={() => navigate('home')} icon={<MagnifyingGlass />} label={locale === 'th' ? 'ค้นหา' : 'Search'} />
-      <Nav active={route === 'cart' || route === 'payment'} onClick={() => navigate('cart')} icon={<ShoppingBag />} label={locale === 'th' ? 'ตะกร้า' : 'Cart'} badge={cartCount} />
+      <Nav prominent active={route === 'cart' || route === 'payment'} onClick={() => navigate('cart')} icon={<ShoppingBag weight="fill" />} label={locale === 'th' ? 'ตะกร้า' : 'Cart'} badge={cartCount} />
       <Nav active={route === 'favorites'} onClick={() => navigate('favorites')} icon={<Heart />} label={locale === 'th' ? 'ถูกใจ' : 'Favorites'} />
       <Nav active={route === 'profile' || route === 'orders' || route === 'admin'} onClick={() => navigate('profile')} icon={<UserCircle />} label={locale === 'th' ? 'บัญชี' : 'Account'} />
     </nav>
   </div>
 }
 
-function Nav({ active, onClick, icon, label, badge = 0 }: { active: boolean; onClick: () => void; icon: React.ReactNode; label: string; badge?: number }) {
-  return <button className={`nav-button ${active ? 'is-active' : ''}`} type="button" onClick={onClick} aria-current={active ? 'page' : undefined}><span className="nav-icon">{icon}{badge > 0 && <b>{badge}</b>}</span><span>{label}</span></button>
+function Nav({ active, onClick, icon, label, badge = 0, prominent = false }: { active: boolean; onClick: () => void; icon: React.ReactNode; label: string; badge?: number; prominent?: boolean }) {
+  return <button className={`nav-button ${active ? 'is-active' : ''} ${prominent ? 'is-cart' : ''}`} type="button" onClick={onClick} aria-current={active ? 'page' : undefined}><span className="nav-icon">{icon}{badge > 0 && <b>{badge}</b>}</span><span>{label}</span></button>
 }

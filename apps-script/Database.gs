@@ -4,7 +4,7 @@ var TABLES = {
   OtpCodes: ['id','email','purpose','codeHash','salt','expiresAt','attempts','consumedAt','createdAt','updatedAt','version'],
   Sessions: ['id','userId','tokenHash','role','expiresAt','privilegedUntil','revokedAt','createdAt','updatedAt','version'],
   Categories: ['id','nameTh','nameEn','active','sortOrder','createdAt','updatedAt','version'],
-  Products: ['id','type','titleTh','titleEn','descriptionTh','descriptionEn','price','deposit','stockOnHand','purchaseLimit','points','active','reviewEnabled','imagesJson','categoryId','preorderCampaignId','createdAt','updatedAt','version'],
+  Products: ['id','type','titleTh','titleEn','descriptionTh','descriptionEn','price','deposit','stockOnHand','purchaseLimit','points','active','reviewEnabled','imagesJson','categoryId','preorderCampaignId','createdAt','updatedAt','version','shippingFee'],
   PreorderCampaigns: ['id','nameTh','nameEn','openAt','closeAt','expectedArrival','capacity','purchaseLimit','deposit','finalPaymentTrigger','termsId','status','createdAt','updatedAt','version'],
   PreorderTerms: ['id','campaignId','versionNumber','titleTh','titleEn','bodyTh','bodyEn','effectiveAt','createdBy','createdAt','updatedAt','version'],
   TermsAcceptances: ['id','orderId','userId','termsId','versionNumber','acceptedAt','deviceInfo','createdAt','updatedAt','version'],
@@ -96,19 +96,19 @@ function findOne_(name, field, value) { return records_(name).filter(function(re
 function findAll_(name, field, value) { return records_(name).filter(function(record) { return String(record[field]) === String(value); }); }
 function insert_(name, record) {
   var now = new Date().toISOString(); var next = Object.assign({ id: Utilities.getUuid(), createdAt: now, updatedAt: now, version: 1 }, record);
-  var headers = TABLES[name]; sheet_(name).appendRow(headers.map(function(header) { return next[header] === undefined || next[header] === null ? '' : next[header]; })); return next;
+  var headers = TABLES[name]; ensureSheet_(spreadsheet_(), name, headers).appendRow(headers.map(function(header) { return next[header] === undefined || next[header] === null ? '' : next[header]; })); return next;
 }
 function update_(name, id, patch, expectedVersion) {
   var current = findById_(name, id); if (!current) throw apiError_('NOT_FOUND', 'ไม่พบข้อมูล ' + name + ':' + id);
   if (expectedVersion !== undefined && Number(current.version) !== Number(expectedVersion)) throw apiError_('VERSION_CONFLICT', 'ข้อมูลถูกแก้จากอุปกรณ์อื่น', { current: current });
   var next = Object.assign({}, current, patch, { updatedAt: new Date().toISOString(), version: Number(current.version || 0) + 1 }); delete next._row;
-  var headers = TABLES[name]; sheet_(name).getRange(current._row, 1, 1, headers.length).setValues([headers.map(function(header) { return next[header] === undefined || next[header] === null ? '' : next[header]; })]); return next;
+  var headers = TABLES[name]; ensureSheet_(spreadsheet_(), name, headers).getRange(current._row, 1, 1, headers.length).setValues([headers.map(function(header) { return next[header] === undefined || next[header] === null ? '' : next[header]; })]); return next;
 }
 function deleteRow_(name, row) { sheet_(name).deleteRow(row); }
 function setting_(key, fallback) { var record = findOne_('Settings', 'key', key); if (!record) return fallback; try { return JSON.parse(record.value); } catch (_) { return record.value; } }
 function setSetting_(key, value) { var record = findOne_('Settings', 'key', key); var payload = typeof value === 'string' ? value : JSON.stringify(value); return record ? update_('Settings', record.id, { value: payload }) : insert_('Settings', { id: key, key: key, value: payload }); }
 function seedSettings_() {
-  var defaults = { storeNameTh: 'ร้านของฉัน', storeNameEn: 'My Shop', primaryColor: '#6d28d9', defaultTheme: 'system', allowUserTheme: true, pointsEnabled: true, reviewsEnabled: true, favoritesEnabled: true, reservationMinutes: 20, currency: 'THB', shippingFee: 50 };
+  var defaults = { storeNameTh: 'ร้านของฉัน', storeNameEn: 'My Shop', primaryColor: '#6d28d9', defaultTheme: 'system', allowUserTheme: true, pointsEnabled: true, reviewsEnabled: true, favoritesEnabled: true, reservationMinutes: 20, currency: 'THB', shippingFee: 50, shippingMode: 'CART', cartShippingFee: 50, loaderKickerTh: 'ยินดีต้อนรับสู่', loaderKickerEn: 'Welcome to', loaderTitleTh: '', loaderTitleEn: '', loaderMessageTh: 'กำลังจัดชั้นสินค้าให้คุณ', loaderMessageEn: 'Curating the shelves for you', loaderLogoUrl: '' };
   Object.keys(defaults).forEach(function(key) { if (!findOne_('Settings', 'key', key)) setSetting_(key, defaults[key]); });
 }
 function seedReferenceData_() {

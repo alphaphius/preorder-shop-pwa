@@ -37,7 +37,7 @@ function verifyOtp_(rawEmail, rawCode) {
 
 function issueSession_(user) {
   var token = secureToken_(); var expiresAt = new Date(Date.now() + SESSION_TTL_HOURS * 3600000).toISOString();
-  insert_('Sessions', { userId: user.id, tokenHash: digest_(token), role: user.role, expiresAt: expiresAt, privilegedUntil: user.role === 'OWNER' ? new Date(Date.now() + 15 * 60000).toISOString() : '', revokedAt: '' });
+  insert_('Sessions', { userId: user.id, tokenHash: digest_(token), role: user.role, expiresAt: expiresAt, privilegedUntil: ['OWNER','ADMIN'].indexOf(user.role) >= 0 ? new Date(Date.now() + 15 * 60000).toISOString() : '', revokedAt: '' });
   return { token: token, expiresAt: expiresAt, user: publicUser_(user) };
 }
 function requireSession_(token) {
