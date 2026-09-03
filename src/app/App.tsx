@@ -162,7 +162,7 @@ export default function App() {
   else page = <StorefrontPage {...common} favoritesOnly={locationState.route === 'favorites'} />
 
   return <>
-    <AppShell data={data} locale={locale} setLocale={setLocale} route={locationState.route} navigate={navigate} cartCount={[...carts.READY, ...carts.PREORDER].reduce((sum, line) => sum + line.quantity, 0)} online={online} session={session} notificationCount={notifications.count} notificationsEnabled={notifications.enabled} onNotifications={handleNotifications}>{page}</AppShell>
+    <AppShell data={data} locale={locale} setLocale={setLocale} route={locationState.route} navigate={navigate} cartCount={[...carts.READY, ...carts.PREORDER].reduce((sum, line) => sum + line.quantity, 0)} online={online} session={session} notificationCount={notifications.count} notificationsEnabled={notifications.enabled} onNotifications={handleNotifications} dataLoading={loading}>{page}</AppShell>
     {showAuth && api && <AuthDialog locale={locale} api={api} onClose={() => setShowAuth(false)} onAuthenticated={onAuthenticated} />}
     {showAuth && demo && <AuthDialog locale={locale} onClose={() => setShowAuth(false)} onAuthenticated={onAuthenticated} />}
     {toast && <div className="status-capsule" role="status">{toast}</div>}

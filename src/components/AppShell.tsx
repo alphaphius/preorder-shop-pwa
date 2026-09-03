@@ -1,11 +1,11 @@
 import { useLayoutEffect, useRef } from 'react'
-import { Bell, Heart, House, MagnifyingGlass, ShoppingBag, UserCircle } from '@phosphor-icons/react'
+import { Bell, Heart, House, MagnifyingGlass, ShoppingBag, SpinnerGap, UserCircle } from '@phosphor-icons/react'
 import gsap from 'gsap'
 import type { Locale, Route, SessionInfo, StorefrontData } from '../domain/types'
 import { MediaImage } from './MediaImage'
 
-interface Props { data: StorefrontData; locale: Locale; setLocale: (v: Locale) => void; route: Route; navigate: (route: Route) => void; cartCount: number; online: boolean; session: SessionInfo | null;notificationCount:number;notificationsEnabled:boolean;onNotifications:()=>void; children: React.ReactNode }
-export function AppShell({ data, locale, setLocale, route, navigate, cartCount, online, session,notificationCount,notificationsEnabled,onNotifications, children }: Props) {
+interface Props { data: StorefrontData; locale: Locale; setLocale: (v: Locale) => void; route: Route; navigate: (route: Route) => void; cartCount: number; online: boolean; session: SessionInfo | null;notificationCount:number;notificationsEnabled:boolean;onNotifications:()=>void; dataLoading:boolean; children: React.ReactNode }
+export function AppShell({ data, locale, setLocale, route, navigate, cartCount, online, session,notificationCount,notificationsEnabled,onNotifications,dataLoading, children }: Props) {
   const main = useRef<HTMLElement>(null)
   useLayoutEffect(() => {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches || !main.current) return
@@ -34,6 +34,7 @@ export function AppShell({ data, locale, setLocale, route, navigate, cartCount, 
       <Nav active={route === 'favorites'} onClick={() => navigate('favorites')} icon={<Heart />} label={locale === 'th' ? 'ถูกใจ' : 'Favorites'} />
       <Nav active={route === 'profile' || route === 'orders' || route === 'admin'} onClick={() => navigate('profile')} icon={<UserCircle />} label={locale === 'th' ? 'บัญชี' : 'Account'} />
     </nav>
+    {dataLoading && <div className="app-data-loading" role="status" aria-live="polite"><SpinnerGap className="spin" aria-hidden="true"/><span>{locale === 'th' ? 'กำลังโหลดข้อมูล…' : 'Loading data…'}</span></div>}
     <main id="main-content" ref={main}>{children}</main>
   </div>
 }
