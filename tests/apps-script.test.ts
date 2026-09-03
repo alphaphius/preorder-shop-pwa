@@ -75,4 +75,13 @@ describe('Apps Script contract', () => {
     expect(source).toContain('contentEnabled:truthy_(item.contentEnabled)')
     expect(source).toContain('content:jsonArray_(item.contentJson)')
   })
+  it('soft-deletes admin-created records without damaging transaction history',()=>{
+    expect(source).toContain('function adminDeleteEntity_')
+    expect(source).toContain("if (action === 'adminDeleteEntity')")
+    expect(source).toContain("patch={deletedAt:new Date().toISOString()}")
+    expect(source).toContain("'DELETE_'+String(payload.entity).toUpperCase()")
+    expect(source).toContain("['all','ready','preorder']")
+    expect(source).toContain("'STATUS_IN_USE'")
+    expect(source).toContain('filter(notDeleted_)')
+  })
 })

@@ -53,6 +53,7 @@ function route_(action, payload, token, requestId) {
   if (action === 'adminSaveCampaign') return adminSaveCampaign_(requireRole_(session, ['ADMIN', 'OWNER']), payload);
   if (action === 'adminSavePaymentAccount') return adminSavePaymentAccount_(requireRole_(session, ['ADMIN', 'OWNER']), payload);
   if (action === 'adminSetEntityActive') return adminSetEntityActive_(requireRole_(session, ['ADMIN', 'OWNER']), payload);
+  if (action === 'adminDeleteEntity') return adminDeleteEntity_(requireRole_(session, ['ADMIN', 'OWNER']), payload);
   if (action === 'adminSaveStatuses') return adminSaveStatuses_(requireRole_(session, ['ADMIN', 'OWNER']), payload);
   if (action === 'adminModerateReview') return adminModerateReview_(requireRole_(session, ['ADMIN', 'OWNER']), payload);
   if (action === 'adminUploadMedia') return adminUploadMedia_(requireRole_(session, ['ADMIN', 'OWNER']), payload);

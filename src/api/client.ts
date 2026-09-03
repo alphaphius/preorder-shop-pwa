@@ -62,6 +62,7 @@ export class ApiClient {
   adminSaveCampaign(session: string, campaign: Partial<PreorderCampaign>) { return this.post<PreorderCampaign>('adminSaveCampaign', campaign, session) }
   adminSavePaymentAccount(session: string, account: Partial<PaymentAccount> & { accountNumber?: string }) { return this.post<PaymentAccount>('adminSavePaymentAccount', account, session) }
   adminSetEntityActive(session: string, entity: string, id: string, active: boolean) { return this.post<Record<string, unknown>>('adminSetEntityActive', { entity, id, active }, session) }
+  adminDeleteEntity(session:string,entity:'product'|'category'|'announcement'|'campaign'|'account'|'review',id:string){return this.post<{deleted:boolean;entity:string;id:string;affected:number}>('adminDeleteEntity',{entity,id},session)}
   adminSaveStatuses(session: string, statuses: OrderStatusOption[]) { return this.post<OrderStatusOption[]>('adminSaveStatuses', { statuses }, session) }
   adminReviewPayment(session: string, paymentId: string, approved: boolean, note = '') { return this.post<Record<string, unknown>>('adminReviewPayment', { paymentId, approved, note }, session) }
   adminTransitionOrder(session: string, orderId: string, status: string, note = '') { return this.post<Record<string, unknown>>('adminTransitionOrder', { orderId, status, note }, session) }

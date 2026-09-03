@@ -3,21 +3,21 @@ var TABLES = {
   Users: ['id','email','displayName','role','status','locale','pointsBalance','xAccount','createdAt','updatedAt','version'],
   OtpCodes: ['id','email','purpose','codeHash','salt','expiresAt','attempts','consumedAt','createdAt','updatedAt','version'],
   Sessions: ['id','userId','tokenHash','role','expiresAt','privilegedUntil','revokedAt','createdAt','updatedAt','version'],
-  Categories: ['id','nameTh','nameEn','active','sortOrder','createdAt','updatedAt','version'],
-  Products: ['id','type','titleTh','titleEn','descriptionTh','descriptionEn','price','deposit','stockOnHand','purchaseLimit','points','active','reviewEnabled','imagesJson','categoryId','preorderCampaignId','createdAt','updatedAt','version','shippingFee','shippingCalculation','contentEnabled','contentJson'],
-  PreorderCampaigns: ['id','nameTh','nameEn','openAt','closeAt','expectedArrival','capacity','purchaseLimit','deposit','finalPaymentTrigger','termsId','status','createdAt','updatedAt','version'],
+  Categories: ['id','nameTh','nameEn','active','sortOrder','createdAt','updatedAt','version','deletedAt'],
+  Products: ['id','type','titleTh','titleEn','descriptionTh','descriptionEn','price','deposit','stockOnHand','purchaseLimit','points','active','reviewEnabled','imagesJson','categoryId','preorderCampaignId','createdAt','updatedAt','version','shippingFee','shippingCalculation','contentEnabled','contentJson','deletedAt'],
+  PreorderCampaigns: ['id','nameTh','nameEn','openAt','closeAt','expectedArrival','capacity','purchaseLimit','deposit','finalPaymentTrigger','termsId','status','createdAt','updatedAt','version','deletedAt'],
   PreorderTerms: ['id','campaignId','versionNumber','titleTh','titleEn','bodyTh','bodyEn','effectiveAt','createdBy','createdAt','updatedAt','version'],
   TermsAcceptances: ['id','orderId','userId','termsId','versionNumber','acceptedAt','deviceInfo','createdAt','updatedAt','version'],
   Orders: ['id','reference','userId','orderType','status','subtotal','shippingFee','shippingBaseFee','shippingAdjustment','shippingAdjustmentNote','amountDueNow','totalPaid','balanceDue','reservedUntil','shippingJson','termsVersion','shippingTermsVersion','shippingTermsAcceptedAt','areaClassificationAcceptedAt','specialAreaCostAcceptedAt','paymentAccountId','createdAt','updatedAt','version','pointsRedeemed','discount'],
   OrderItems: ['id','orderId','productId','titleSnapshot','unitPrice','depositUnit','quantity','pointsUnit','createdAt','updatedAt','version'],
   StockReservations: ['id','orderId','productId','userId','quantity','state','expiresAt','createdAt','updatedAt','version'],
   Payments: ['id','orderId','userId','kind','amount','accountId','slipFileId','transferAt','status','reviewNote','reviewedBy','reviewedAt','createdAt','updatedAt','version'],
-  PaymentAccounts: ['id','bankName','accountName','accountNumber','accountNumberMasked','active','sortOrder','createdAt','updatedAt','version'],
+  PaymentAccounts: ['id','bankName','accountName','accountNumber','accountNumberMasked','active','sortOrder','createdAt','updatedAt','version','deletedAt'],
   OrderStatusHistory: ['id','orderId','fromStatus','toStatus','note','actorUserId','createdAt','updatedAt','version'],
   OrderMessages: ['id','orderId','campaignId','subjectTh','subjectEn','bodyTh','bodyEn','sendEmail','createdBy','createdAt','updatedAt','version'],
-  Announcements: ['id','headerTh','headerEn','bodyTh','bodyEn','imageUrl','kind','active','sortOrder','createdAt','updatedAt','version','contentEnabled','contentJson','productIdsJson'],
+  Announcements: ['id','headerTh','headerEn','bodyTh','bodyEn','imageUrl','kind','active','sortOrder','createdAt','updatedAt','version','contentEnabled','contentJson','productIdsJson','deletedAt'],
   Favorites: ['id','userId','productId','active','createdAt','updatedAt','version'],
-  Reviews: ['id','userId','productId','orderItemId','rating','body','status','adminReply','createdAt','updatedAt','version'],
+  Reviews: ['id','userId','productId','orderItemId','rating','body','status','adminReply','createdAt','updatedAt','version','deletedAt'],
   PointsLedger: ['id','userId','orderId','kind','points','expiresAt','note','createdAt','updatedAt','version'],
   Notifications: ['id','userId','orderId','kind','titleTh','titleEn','bodyTh','bodyEn','readAt','createdAt','updatedAt','version'],
   FileRegistry: ['id','ownerUserId','orderId','kind','driveFileId','fileName','mimeType','size','checksum','state','createdAt','updatedAt','version'],
@@ -87,10 +87,8 @@ function ensureSheet_(ss, name, headers) {
   if (!sheet.getFilter() && sheet.getLastColumn() > 0) sheet.getRange(1, 1, Math.max(1, sheet.getLastRow()), sheet.getLastColumn()).createFilter();
   return sheet;
 }
-function sheet_(name) {
-  var ss = spreadsheet_();
-  return ss.getSheetByName(name) || ensureSheet_(ss, name, TABLES[name]);
-}
+var SHEET_RUNTIME_CACHE_={};
+function sheet_(name) {if(SHEET_RUNTIME_CACHE_[name])return SHEET_RUNTIME_CACHE_[name];var ss=spreadsheet_();var sheet=ss.getSheetByName(name)||ensureSheet_(ss,name,TABLES[name]);var last=Math.max(1,sheet.getLastColumn());var existing=sheet.getRange(1,1,1,last).getValues()[0];var missing=TABLES[name].filter(function(header){return existing.indexOf(header)<0;});if(missing.length)sheet.getRange(1,last+1,1,missing.length).setValues([missing]);SHEET_RUNTIME_CACHE_[name]=sheet;return sheet;}
 function records_(name) {
   var sheet = sheet_(name); if (sheet.getLastRow() < 2) return [];
   var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
