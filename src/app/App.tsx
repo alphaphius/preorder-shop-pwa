@@ -74,6 +74,14 @@ export default function App() {
       localStorage.setItem('shop.store-name.en', value.settings.storeNameEn)
       localStorage.setItem('shop.loader-settings', JSON.stringify(value.settings))
       setData(value); void cacheStorefront(value)
+      void loadCart().then((savedLines) => {
+        const regrouped: CartState = { READY: [], PREORDER: [] }
+        ;(savedLines || []).forEach((line) => {
+          const type = value.products.find((product) => product.id === line.productId)?.type
+          if (type) regrouped[type].push(line)
+        })
+        setCarts(regrouped)
+      })
     }).catch(async (cause) => {
       const cached = await loadCachedStorefront(); if (cached) setData(cached)
       setError(cause instanceof Error ? cause.message : 'เชื่อมต่อร้านค้าไม่สำเร็จ')
