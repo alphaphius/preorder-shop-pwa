@@ -124,7 +124,7 @@ export interface OrderSummary {
   balanceDue: number
   shipping?: { name?: string; phone?: string; address?: string; xAccount?:string; specialAreaType?:string; areaClassificationConfirmed?:boolean; specialAreaCostAccepted?:boolean }
   items?: Array<{ id: string; productId: string; titleSnapshot: string; unitPrice: number; quantity: number }>
-  history?: Array<{ id: string; toStatus: string; note?: string; createdAt: string }>
+  history?: Array<{ id: string; fromStatus?: string; toStatus: string; note?: string; actorUserId?: string; createdAt: string }>
   messages?: UserNotification[]
   reservedUntil?: string
   createdAt: string

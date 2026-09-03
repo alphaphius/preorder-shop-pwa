@@ -348,6 +348,9 @@ td button { min-height: 38px; border: 1px solid var(--color-border); border-radi
 .loader-core.has-logo { background:transparent;box-shadow:none; }
 .loading-copy { min-height: 170px; display: grid; justify-items: center; align-content: start; }
 .loading-kicker { color: var(--color-primary); font-size: .78rem; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
+.loading-source-status { display:inline-flex;align-items:center;gap:8px;margin-bottom:10px;padding:7px 12px;border:1px solid color-mix(in srgb,var(--color-primary) 24%,var(--color-border));border-radius:999px;background:color-mix(in srgb,var(--color-primary) 7%,var(--color-surface));color:var(--color-muted);font-size:.74rem;font-weight:650; }
+.loading-source-status::before { content:"";width:7px;height:7px;border-radius:50%;background:var(--color-primary);box-shadow:0 0 0 5px color-mix(in srgb,var(--color-primary) 13%,transparent);animation:source-pulse 1.2s ease-in-out infinite; }
+@keyframes source-pulse{50%{opacity:.42;transform:scale(.78)}}
 .loading-copy h1 { max-width: 100%; margin: 4px 0 3px; font-size: clamp(2rem, 10vw, 3.25rem); line-height: 1.12; overflow-wrap: anywhere; }
 .loading-copy > p, .loading-error p { margin: 2px 0; color: var(--color-muted); }
 .loading-dots { height: 26px; display: flex; align-items: end; gap: 7px; margin-top: 12px; }
@@ -558,5 +561,33 @@ td button { min-height: 38px; border: 1px solid var(--color-border); border-radi
 .skeleton-lines i { display:block;height:13px;border-radius:999px;background:linear-gradient(90deg,var(--color-surface-soft),color-mix(in srgb,var(--color-primary) 12%,var(--color-surface)),var(--color-surface-soft));background-size:220% 100%;animation:skeleton-shimmer 1.35s ease-in-out infinite; }
 .skeleton-lines i:nth-child(2){width:82%}.skeleton-lines i:nth-child(3){width:64%}
 @keyframes skeleton-shimmer { to { background-position:-220% 0; } }
+.editable-orders-table td { vertical-align:top; }
+.table-status-editor { min-width:230px;display:grid;gap:8px; }
+.table-status-editor select { min-height:40px;border-radius:10px;font-size:.82rem; }
+.table-status-editor .confirm-status-button { min-height:38px;width:100%; }
+.table-status-editor small { color:var(--color-muted);font-size:.7rem;line-height:1.35; }
+.orders-page { width:min(100%,1180px); }
+.customer-order-grid { display:grid;gap:18px; }
+.customer-order-card { display:grid;gap:18px;padding:20px;border:1px solid var(--color-border);border-radius:22px;background:var(--color-surface);box-shadow:var(--shadow-soft); }
+.customer-order-card>header { display:flex;justify-content:space-between;align-items:flex-start;gap:14px; }
+.customer-order-card>header h2 { margin:3px 0;font-size:1.12rem; }
+.customer-order-card>header small,.customer-order-card>header span { color:var(--color-muted); }
+.customer-order-card>dl { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0; }
+.customer-order-card>dl>div { display:grid;gap:3px;padding:12px;border-radius:13px;background:var(--color-surface-soft); }
+.customer-order-card dt { color:var(--color-muted);font-size:.76rem; }.customer-order-card dd { margin:0;font-weight:750;font-variant-numeric:tabular-nums; }
+.customer-order-items { display:grid;gap:7px;padding:14px;border:1px solid var(--color-border);border-radius:14px; }
+.customer-order-items>span { display:flex;justify-content:space-between;gap:12px;color:var(--color-muted);font-size:.84rem; }
+.customer-order-items b { color:var(--color-text);white-space:nowrap; }
+.customer-status-timeline { display:grid;padding:16px 16px 6px;border-radius:16px;background:color-mix(in srgb,var(--color-primary) 4%,var(--color-surface-soft)); }
+.timeline-heading { display:flex;justify-content:space-between;gap:12px;margin-bottom:12px; }.timeline-heading span { color:var(--color-muted);font-size:.76rem; }
+.customer-timeline-step { position:relative;display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;min-height:62px; }
+.customer-timeline-step:not(:last-child)::after { content:"";position:absolute;left:13px;top:25px;bottom:0;width:2px;background:color-mix(in srgb,var(--color-primary) 24%,var(--color-border)); }
+.timeline-marker { position:relative;z-index:1;display:grid;place-items:start center;color:var(--color-primary);background:transparent; }.timeline-marker svg { width:20px;height:20px;background:var(--color-surface-soft);border-radius:50%; }
+.customer-timeline-step>div { display:grid;align-content:start;gap:2px;padding-bottom:13px; }
+.customer-timeline-step time { color:var(--color-muted);font-size:.76rem;font-variant-numeric:tabular-nums; }.customer-timeline-step p { margin:4px 0 0;font-size:.82rem; }
+.customer-payment-callout { display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:16px;border:1px solid color-mix(in srgb,var(--color-primary) 28%,var(--color-border));border-radius:16px;background:color-mix(in srgb,var(--color-primary) 8%,var(--color-surface)); }
+.customer-payment-callout>svg { color:var(--color-primary); }.customer-payment-callout>div { display:grid;gap:3px; }.customer-payment-callout span { color:var(--color-muted);font-size:.8rem; }.customer-payment-callout .primary-button { width:auto;margin:0;white-space:nowrap; }
+@media(min-width:900px){.customer-order-grid{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}.customer-order-card{padding:22px}.customer-order-card:has(.customer-payment-callout){grid-column:span 2}.customer-payment-callout{padding:18px 20px}}
+@media(max-width:719px){.customer-order-card>header{display:grid}.customer-order-card>dl{grid-template-columns:1fr}.customer-payment-callout{grid-template-columns:auto minmax(0,1fr)}.customer-payment-callout .primary-button{grid-column:1/-1;width:100%}}
 @media (max-width:719px){.seed-panel{grid-template-columns:auto minmax(0,1fr)}.seed-panel button{grid-column:1/-1;width:100%}.admin-list article{grid-template-columns:auto minmax(0,1fr) auto}.admin-list article>b{grid-column:2}.danger-icon-button{grid-column:3;grid-row:1/3}}
 @media (prefers-reduced-motion:reduce){.skeleton-lines i{animation:none}}

@@ -31,6 +31,7 @@ export function StoreLoadingScreen({ locale, storeName, title, kicker, message, 
         <div className={`loader-core ${logoUrl?'has-logo':''}`}>{logoUrl ? <MediaImage src={logoUrl} alt="" loading="eager"/> : <span>{initial}</span>}</div>
       </div>
       <div className="loading-copy">
+        {!error&&<span className="loading-source-status">{locale==='th'?'กำลังเชื่อมต่อ Apps Script · อ่านข้อมูลจาก Google Sheet':'Connecting to Apps Script · Reading Google Sheets data'}</span>}
         <span className="loading-kicker">{kicker || (locale === 'th' ? 'ยินดีต้อนรับสู่' : 'Welcome to')}</span>
         <h1>{title || storeName}</h1>
         {!error ? <><p>{message || (locale === 'th' ? 'กำลังจัดชั้นสินค้าให้คุณ' : 'Curating the shelves for you')}</p><div className="loading-dots" aria-hidden="true"><i className="loading-dot" /><i className="loading-dot" /><i className="loading-dot" /></div></> : <div className="loading-error"><p>{error}</p><button type="button" className="primary-button" onClick={onRetry}>{locale === 'th' ? 'ลองเชื่อมต่ออีกครั้ง' : 'Try again'}</button></div>}

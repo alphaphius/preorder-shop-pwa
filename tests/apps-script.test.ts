@@ -56,4 +56,10 @@ describe('Apps Script contract', () => {
     expect(source).toContain("kind:'LOW_STOCK'")
     expect(source).toContain('lowStockThreshold')
   })
+  it('timestamps every order transition and reopens the payment window for balances',()=>{
+    expect(source).toContain("payload.status==='BALANCE_DUE'")
+    expect(source).toContain("insert_('OrderStatusHistory'")
+    expect(source).toContain("queueJob_('ORDER_STATUS_CHANGED'")
+    expect(source).toContain("var isBalance=fresh.status==='BALANCE_DUE'")
+  })
 })
