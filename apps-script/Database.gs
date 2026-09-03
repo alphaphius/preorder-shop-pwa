@@ -79,8 +79,9 @@ function ensureSheet_(ss, name, headers) {
   var sheet = ss.getSheetByName(name) || ss.insertSheet(name);
   if (sheet.getLastRow() === 0) sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
   else {
-    var existing = sheet.getRange(1, 1, 1, Math.max(sheet.getLastColumn(), headers.length)).getValues()[0];
-    headers.forEach(function(header) { if (existing.indexOf(header) < 0) { existing.push(header); sheet.getRange(1, existing.length).setValue(header); } });
+    var lastColumn = Math.max(1, sheet.getLastColumn()); var existing = sheet.getRange(1, 1, 1, lastColumn).getValues()[0];
+    var missing = headers.filter(function(header) { return existing.indexOf(header) < 0; });
+    if (missing.length) sheet.getRange(1, lastColumn + 1, 1, missing.length).setValues([missing]);
   }
   sheet.setFrozenRows(1); sheet.getRange(1, 1, 1, Math.max(1, sheet.getLastColumn())).setFontWeight('bold').setBackground('#6d28d9').setFontColor('#ffffff');
   if (!sheet.getFilter() && sheet.getLastColumn() > 0) sheet.getRange(1, 1, Math.max(1, sheet.getLastRow()), sheet.getLastColumn()).createFilter();
@@ -93,20 +94,21 @@ function sheet_(name) {
 function records_(name) {
   var sheet = sheet_(name); if (sheet.getLastRow() < 2) return [];
   var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-  return sheet.getRange(2, 1, sheet.getLastRow() - 1, headers.length).getValues().map(function(row, index) { var record = { _row: index + 2 }; headers.forEach(function(header, i) { record[header] = row[i]; }); return record; });
+  var canonical = TABLES[name];
+  return sheet.getRange(2, 1, sheet.getLastRow() - 1, headers.length).getValues().map(function(row, index) { var record = { _row: index + 2 }; headers.forEach(function(header, i) { if (header) record[header] = row[i]; });canonical.forEach(function(header,i){var orphan=row[i];if(!headers[i]&&(record[header]===undefined||record[header]==='')&&orphan!==''&&orphan!==null)record[header]=orphan;}); return record; });
 }
 function findById_(name, id) { return records_(name).filter(function(record) { return String(record.id) === String(id); })[0] || null; }
 function findOne_(name, field, value) { return records_(name).filter(function(record) { return String(record[field]) === String(value); })[0] || null; }
 function findAll_(name, field, value) { return records_(name).filter(function(record) { return String(record[field]) === String(value); }); }
 function insert_(name, record) {
   var now = new Date().toISOString(); var next = Object.assign({ id: Utilities.getUuid(), createdAt: now, updatedAt: now, version: 1 }, record);
-  var headers = TABLES[name]; sheet_(name).appendRow(headers.map(function(header) { return next[header] === undefined || next[header] === null ? '' : next[header]; })); return next;
+  var sheet=sheet_(name);var headers=sheet.getRange(1,1,1,sheet.getLastColumn()).getValues()[0];sheet.appendRow(headers.map(function(header) { return !header||next[header] === undefined || next[header] === null ? '' : next[header]; })); return next;
 }
 function update_(name, id, patch, expectedVersion) {
   var current = findById_(name, id); if (!current) throw apiError_('NOT_FOUND', 'ไม่พบข้อมูล ' + name + ':' + id);
   if (expectedVersion !== undefined && Number(current.version) !== Number(expectedVersion)) throw apiError_('VERSION_CONFLICT', 'ข้อมูลถูกแก้จากอุปกรณ์อื่น', { current: current });
   var next = Object.assign({}, current, patch, { updatedAt: new Date().toISOString(), version: Number(current.version || 0) + 1 }); delete next._row;
-  var headers = TABLES[name]; ensureSheet_(spreadsheet_(), name, headers).getRange(current._row, 1, 1, headers.length).setValues([headers.map(function(header) { return next[header] === undefined || next[header] === null ? '' : next[header]; })]); return next;
+  var sheet=sheet_(name);var headers=sheet.getRange(1,1,1,sheet.getLastColumn()).getValues()[0];sheet.getRange(current._row, 1, 1, headers.length).setValues([headers.map(function(header) { return !header||next[header] === undefined || next[header] === null ? '' : next[header]; })]); return next;
 }
 function deleteRow_(name, row) { sheet_(name).deleteRow(row); }
 var SETTINGS_RUNTIME_CACHE_;

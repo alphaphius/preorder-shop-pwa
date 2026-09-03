@@ -68,4 +68,11 @@ describe('Apps Script contract', () => {
     expect(source).toContain('Date.now()-started>240000')
     expect(source).toContain("job.state==='RUNNING'")
   })
+  it('round-trips rich product content across legacy and current sheet layouts',()=>{
+    expect(source).toContain("if(!headers[i]&&(record[header]===undefined||record[header]==='')")
+    expect(source).toContain('sheet.getRange(1,1,1,sheet.getLastColumn()).getValues()[0]')
+    expect(source).toContain('var result=adminProduct_(next)')
+    expect(source).toContain('contentEnabled:truthy_(item.contentEnabled)')
+    expect(source).toContain('content:jsonArray_(item.contentJson)')
+  })
 })
