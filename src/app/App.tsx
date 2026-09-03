@@ -48,7 +48,7 @@ export default function App() {
   useEffect(() => {
     loadCart().then((lines) => {
       const next: CartState = { READY: [], PREORDER: [] }
-      lines.forEach((line) => {
+      ;(lines || []).forEach((line) => {
         const type = mockStorefront.products.find((p) => p.id === line.productId)?.type || 'READY'
         next[type].push(line)
       })
