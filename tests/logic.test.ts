@@ -15,6 +15,7 @@ describe('commerce logic', () => {
     const lines = [{ productId: 'p-1', quantity: 2 }, { productId: 'p-3', quantity: 1 }]
     expect(shippingTotal(lines, mockStorefront.products, { shippingMode: 'CART', cartShippingFee: 50 })).toBe(50)
     expect(shippingTotal(lines, mockStorefront.products, { shippingMode: 'ITEM', cartShippingFee: 50 })).toBe(95)
+    expect(shippingTotal(lines, mockStorefront.products.map((product, index) => index === 0 ? { ...product, shippingCalculation: 'FLAT' } : product), { shippingMode: 'ITEM', cartShippingFee: 50 })).toBe(60)
   })
   it('uses server deadline for countdown', () => {
     expect(secondsRemaining('2026-08-30T10:01:40.000Z', Date.parse('2026-08-30T10:00:00.000Z'))).toBe(100)

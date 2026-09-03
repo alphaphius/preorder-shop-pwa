@@ -37,7 +37,7 @@ export class ApiClient {
   requestOtp(email: string) { return this.post<{ expiresAt: string; maskedEmail: string }>('requestOtp', { email }) }
   verifyOtp(email: string, code: string, rememberDevice = true) { return this.post<SessionInfo>('verifyOtp', { email, code, rememberDevice }) }
   me(session: string) { return this.post<UserProfile>('me', {}, session) }
-  createReservation(session: string, lines: { productId: string; quantity: number }[], termsAcceptance?: { termsId: string; version: number }, redeemPoints = 0, shipping: Record<string,string> = {}, shippingAcceptance?: { version:number }) { return this.post<ReservationResult>('createReservation', { lines, termsAcceptance, redeemPoints, shipping, shippingAcceptance }, session) }
+  createReservation(session: string, lines: { productId: string; quantity: number }[], termsAcceptance?: { termsId: string; version: number }, redeemPoints = 0, shipping: Record<string,string|boolean> = {}, shippingAcceptance?: { version:number;areaClassificationConfirmed:boolean;specialAreaCostAccepted:boolean }) { return this.post<ReservationResult>('createReservation', { lines, termsAcceptance, redeemPoints, shipping, shippingAcceptance }, session) }
   uploadSlip(session: string, payload: { orderId: string; amount: number; accountId: string; transferAt: string; fileName: string; mimeType: string; base64: string }) { return this.post<{ order: OrderSummary; paymentId: string; emailJobId: string }>('uploadSlip', payload, session) }
   listOrders(session: string) { return this.post<OrderSummary[]>('listOrders', {}, session) }
   listFavorites(session: string) { return this.post<string[]>('listFavorites', {}, session) }
@@ -53,6 +53,8 @@ export class ApiClient {
   adminConfiguration(session: string) { return this.post<AdminConfiguration>('adminConfiguration', {}, session) }
   adminSaveSettings(session: string, settings: Partial<ShopSettings>) { return this.post<ShopSettings>('adminSaveSettings', settings, session) }
   adminAddAdmin(session: string, email: string, displayName = '') { return this.post<AdminAccount>('adminAddAdmin', { email, displayName }, session) }
+  adminRemoveAdmin(session: string, userId: string) { return this.post<AdminAccount>('adminRemoveAdmin', { userId }, session) }
+  adminSeedMockData(session: string) { return this.post<{seeded:boolean;products:number;announcements:number;sampleOrders:number}>('adminSeedMockData', {}, session) }
   adminSetShippingAdjustment(session:string,orderId:string,amount:number,note:string){return this.post<OrderSummary>('adminSetShippingAdjustment',{orderId,amount,note},session)}
   adminSaveProduct(session: string, product: Product) { return this.post<Product>('adminSaveProduct', product, session) }
   adminSaveCategory(session: string, category: Partial<Category>) { return this.post<Category>('adminSaveCategory', category, session) }

@@ -49,6 +49,7 @@ export interface Product {
   descriptionEn: string
   price: number
   shippingFee: number
+  shippingCalculation: 'FLAT' | 'PER_UNIT'
   deposit: number
   stockOnHand: number
   reservedQuantity: number
@@ -121,7 +122,7 @@ export interface OrderSummary {
   amountDueNow?: number
   totalPaid: number
   balanceDue: number
-  shipping?: { name?: string; phone?: string; address?: string; xAccount?:string; specialAreaType?:string }
+  shipping?: { name?: string; phone?: string; address?: string; xAccount?:string; specialAreaType?:string; areaClassificationConfirmed?:boolean; specialAreaCostAccepted?:boolean }
   items?: Array<{ id: string; productId: string; titleSnapshot: string; unitPrice: number; quantity: number }>
   history?: Array<{ id: string; toStatus: string; note?: string; createdAt: string }>
   messages?: UserNotification[]

@@ -27,7 +27,6 @@ export function AppShell({ data, locale, setLocale, route, navigate, cartCount, 
         <button className={`icon-button notification-button ${notificationsEnabled?'is-enabled':''}`} type="button" onClick={onNotifications} aria-label={locale === 'th' ? notificationsEnabled?'การแจ้งเตือนเปิดอยู่':'เปิดการแจ้งเตือน' : notificationsEnabled?'Notifications enabled':'Enable notifications'}><Bell size={20} weight={notificationsEnabled?'fill':'regular'}/>{notificationCount>0&&<b>{Math.min(notificationCount,99)}</b>}</button>
       </div>
     </header>
-    <main id="main-content" ref={main}>{children}</main>
     <nav className="bottom-nav" aria-label={locale === 'th' ? 'เมนูหลัก' : 'Main navigation'}>
       <Nav active={route === 'home' || route === 'product'} onClick={() => navigate('home')} icon={<House />} label={locale === 'th' ? 'หน้าแรก' : 'Home'} />
       <Nav active={false} onClick={() => navigate('home')} icon={<MagnifyingGlass />} label={locale === 'th' ? 'ค้นหา' : 'Search'} />
@@ -35,6 +34,7 @@ export function AppShell({ data, locale, setLocale, route, navigate, cartCount, 
       <Nav active={route === 'favorites'} onClick={() => navigate('favorites')} icon={<Heart />} label={locale === 'th' ? 'ถูกใจ' : 'Favorites'} />
       <Nav active={route === 'profile' || route === 'orders' || route === 'admin'} onClick={() => navigate('profile')} icon={<UserCircle />} label={locale === 'th' ? 'บัญชี' : 'Account'} />
     </nav>
+    <main id="main-content" ref={main}>{children}</main>
   </div>
 }
 

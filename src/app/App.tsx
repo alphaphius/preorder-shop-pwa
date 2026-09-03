@@ -56,6 +56,7 @@ export default function App() {
     })
   }, [])
   useEffect(() => { const update = () => setLocationState(routeFromHash()); addEventListener('hashchange', update); return () => removeEventListener('hashchange', update) }, [])
+  useEffect(() => { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }) }, [locationState.route, locationState.id])
   useEffect(() => { const up = () => setOnline(true); const down = () => setOnline(false); addEventListener('online', up); addEventListener('offline', down); return () => { removeEventListener('online', up); removeEventListener('offline', down) } }, [])
   useEffect(() => {
     const resolved = theme === 'system' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme
@@ -114,7 +115,7 @@ export default function App() {
     persistCarts({ ...carts, [type]: lines })
   }
   const requireAuth = () => { if (demo || session) return true; setShowAuth(true); return false }
-  const reserve = async (type: ProductType, termsAcceptance?: { termsId: string; version: number }, redeemPoints = 0, shipping: Record<string,string> = {},shippingAcceptance?:{version:number}) => {
+  const reserve = async (type: ProductType, termsAcceptance?: { termsId: string; version: number }, redeemPoints = 0, shipping: Record<string,string|boolean> = {},shippingAcceptance?:{version:number;areaClassificationConfirmed:boolean;specialAreaCostAccepted:boolean}) => {
     if (!online) throw new Error(locale === 'th' ? 'ต้องออนไลน์ก่อนยืนยันออเดอร์' : 'Go online to confirm your order')
     if (!requireAuth()) return
     if (demo) {

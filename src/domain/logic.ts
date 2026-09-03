@@ -22,7 +22,11 @@ export const cartTotal = (lines: CartLine[], products: Product[], depositOnly = 
 }, 0)
 
 export const shippingTotal = (lines: CartLine[], products: Product[], settings: Pick<ShopSettings, 'shippingMode' | 'cartShippingFee'>) => settings.shippingMode === 'ITEM'
-  ? lines.reduce((sum, line) => sum + (products.find((product) => product.id === line.productId)?.shippingFee || 0) * line.quantity, 0)
+  ? lines.reduce((sum, line) => {
+    const product = products.find((item) => item.id === line.productId)
+    if (!product) return sum
+    return sum + product.shippingFee * (product.shippingCalculation === 'FLAT' ? 1 : line.quantity)
+  }, 0)
   : settings.cartShippingFee
 
 export const secondsRemaining = (expiresAt: string | undefined, serverNow = Date.now()) => !expiresAt ? 0 : Math.max(0, Math.ceil((new Date(expiresAt).getTime() - serverNow) / 1000))
