@@ -100,7 +100,7 @@ function findOne_(name, field, value) { return records_(name).filter(function(re
 function findAll_(name, field, value) { return records_(name).filter(function(record) { return String(record[field]) === String(value); }); }
 function insert_(name, record) {
   var now = new Date().toISOString(); var next = Object.assign({ id: Utilities.getUuid(), createdAt: now, updatedAt: now, version: 1 }, record);
-  var headers = TABLES[name]; ensureSheet_(spreadsheet_(), name, headers).appendRow(headers.map(function(header) { return next[header] === undefined || next[header] === null ? '' : next[header]; })); return next;
+  var headers = TABLES[name]; sheet_(name).appendRow(headers.map(function(header) { return next[header] === undefined || next[header] === null ? '' : next[header]; })); return next;
 }
 function update_(name, id, patch, expectedVersion) {
   var current = findById_(name, id); if (!current) throw apiError_('NOT_FOUND', 'ไม่พบข้อมูล ' + name + ':' + id);

@@ -62,4 +62,10 @@ describe('Apps Script contract', () => {
     expect(source).toContain("queueJob_('ORDER_STATUS_CHANGED'")
     expect(source).toContain("var isBalance=fresh.status==='BALANCE_DUE'")
   })
+  it('keeps status emails off the save path and processes them in bounded batches',()=>{
+    expect(source).toContain("queueJob_('ORDER_STATUS_CHANGED'")
+    expect(source).toContain(".slice(0,3)")
+    expect(source).toContain('Date.now()-started>240000')
+    expect(source).toContain("job.state==='RUNNING'")
+  })
 })
