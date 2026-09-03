@@ -29,6 +29,12 @@ export interface ShopSettings {
   loaderMessageTh: string
   loaderMessageEn: string
   loaderLogoUrl?: string
+  shippingTermsTh: string
+  shippingTermsEn: string
+  shippingTermsVersion: number
+  remoteAreaTermsTh: string
+  remoteAreaTermsEn: string
+  lowStockThreshold: number
 }
 
 export interface Category { id: string; nameTh: string; nameEn: string; active: boolean; sortOrder: number }
@@ -84,13 +90,13 @@ export interface StorefrontData {
   serverTime: string
 }
 export interface SessionInfo { token: string; expiresAt: string; user: UserProfile }
-export interface UserProfile { id: string; email: string; displayName: string; role: UserRole; locale: Locale; pointsBalance: number }
+export interface UserProfile { id: string; email: string; displayName: string; role: UserRole; locale: Locale; pointsBalance: number; xAccount?: string }
 export interface AdminAccount { id: string; email: string; displayName: string; role: UserRole; status: string }
 export interface AdminConfiguration { settings: ShopSettings; admins: AdminAccount[] }
-export interface AdminDashboard { pendingPayments:number;ordersToday:number;lowStock:number;failedJobs:number;totalTransferred:number;totalOrders:number;totalItems:number;daily:Array<{date:string;revenue:number;orders:number;items:number}>;productSales:Array<{productId:string;nameTh:string;nameEn:string;quantity:number;revenue:number}> }
+export interface AdminDashboard { pendingPayments:number;ordersToday:number;lowStock:number;lowStockThreshold:number;lowStockProducts:Array<{id:string;titleTh:string;titleEn:string;available:number}>;failedJobs:number;totalTransferred:number;totalOrders:number;totalItems:number;daily:Array<{date:string;revenue:number;orders:number;items:number}>;productSales:Array<{productId:string;nameTh:string;nameEn:string;quantity:number;revenue:number}> }
 export interface OrderStatusOption { id: string; th: string; en: string }
 export interface AdminPayment { id: string; orderId: string; amount: number; status: string; slipFileId?: string; reviewNote?: string }
-export interface AdminOrder extends OrderSummary { userEmail: string; shippingFee: number; payment: AdminPayment | null }
+export interface AdminOrder extends OrderSummary { userEmail: string; userXAccount?:string; shippingFee: number; shippingBaseFee?:number; shippingAdjustment?:number; shippingAdjustmentNote?:string; payment: AdminPayment | null }
 export interface AdminWorkspace {
   products: Product[]
   categories: Array<Category & { version?: number }>
@@ -115,7 +121,7 @@ export interface OrderSummary {
   amountDueNow?: number
   totalPaid: number
   balanceDue: number
-  shipping?: { name?: string; phone?: string; address?: string }
+  shipping?: { name?: string; phone?: string; address?: string; xAccount?:string; specialAreaType?:string }
   items?: Array<{ id: string; productId: string; titleSnapshot: string; unitPrice: number; quantity: number }>
   history?: Array<{ id: string; toStatus: string; note?: string; createdAt: string }>
   messages?: UserNotification[]

@@ -1,6 +1,6 @@
 var TABLES = {
   Settings: ['id','key','value','updatedAt'],
-  Users: ['id','email','displayName','role','status','locale','pointsBalance','createdAt','updatedAt','version'],
+  Users: ['id','email','displayName','role','status','locale','pointsBalance','xAccount','createdAt','updatedAt','version'],
   OtpCodes: ['id','email','purpose','codeHash','salt','expiresAt','attempts','consumedAt','createdAt','updatedAt','version'],
   Sessions: ['id','userId','tokenHash','role','expiresAt','privilegedUntil','revokedAt','createdAt','updatedAt','version'],
   Categories: ['id','nameTh','nameEn','active','sortOrder','createdAt','updatedAt','version'],
@@ -8,7 +8,7 @@ var TABLES = {
   PreorderCampaigns: ['id','nameTh','nameEn','openAt','closeAt','expectedArrival','capacity','purchaseLimit','deposit','finalPaymentTrigger','termsId','status','createdAt','updatedAt','version'],
   PreorderTerms: ['id','campaignId','versionNumber','titleTh','titleEn','bodyTh','bodyEn','effectiveAt','createdBy','createdAt','updatedAt','version'],
   TermsAcceptances: ['id','orderId','userId','termsId','versionNumber','acceptedAt','deviceInfo','createdAt','updatedAt','version'],
-  Orders: ['id','reference','userId','orderType','status','subtotal','shippingFee','amountDueNow','totalPaid','balanceDue','reservedUntil','shippingJson','termsVersion','paymentAccountId','createdAt','updatedAt','version','pointsRedeemed','discount'],
+  Orders: ['id','reference','userId','orderType','status','subtotal','shippingFee','shippingBaseFee','shippingAdjustment','shippingAdjustmentNote','amountDueNow','totalPaid','balanceDue','reservedUntil','shippingJson','termsVersion','shippingTermsVersion','shippingTermsAcceptedAt','paymentAccountId','createdAt','updatedAt','version','pointsRedeemed','discount'],
   OrderItems: ['id','orderId','productId','titleSnapshot','unitPrice','depositUnit','quantity','pointsUnit','createdAt','updatedAt','version'],
   StockReservations: ['id','orderId','productId','userId','quantity','state','expiresAt','createdAt','updatedAt','version'],
   Payments: ['id','orderId','userId','kind','amount','accountId','slipFileId','transferAt','status','reviewNote','reviewedBy','reviewedAt','createdAt','updatedAt','version'],
@@ -30,7 +30,7 @@ var TABLES = {
 };
 
 function onOpen() {
-  SpreadsheetApp.getUi().createMenu('Preorder Shop').addItem('สร้าง/อัปเดตฐานข้อมูล', 'setupSystem').addItem('เพิ่มข้อมูลตัวอย่างสำหรับทดสอบ', 'seedMockData').addItem('ตั้งค่า Owner จากบัญชีปัจจุบัน', 'configureCurrentUserAsOwner').addItem('ประมวลผลงานค้าง', 'processJobs').addToUi();
+  SpreadsheetApp.getUi().createMenu('Preorder Shop').addItem('สร้าง/อัปเดตฐานข้อมูล', 'setupSystem').addItem('เพิ่มผู้ดูแลด้วยอีเมล', 'addAdministratorFromPrompt').addItem('เพิ่มข้อมูลตัวอย่างสำหรับทดสอบ', 'seedMockData').addItem('ตั้งค่า Owner จากบัญชีปัจจุบัน', 'configureCurrentUserAsOwner').addItem('ประมวลผลงานค้าง', 'processJobs').addToUi();
 }
 
 function setupSystem() {
@@ -40,13 +40,17 @@ function setupSystem() {
     Object.keys(TABLES).forEach(function(name) { ensureSheet_(ss, name, TABLES[name]); });
     seedSettings_(); setSetting_('spreadsheetId', ss.getId()); seedReferenceData_(); ensureDriveFolders_(); ensureTriggers_();
     PropertiesService.getScriptProperties().setProperty('SCHEMA_VERSION', String(SCHEMA_VERSION));
-    if (!findOne_('SchemaMigrations', 'schemaVersion', SCHEMA_VERSION)) insert_('SchemaMigrations', { id: Utilities.getUuid(), schemaVersion: SCHEMA_VERSION, appliedAt: new Date().toISOString(), notes: 'Initial commerce schema' });
+    if (!findOne_('SchemaMigrations', 'schemaVersion', SCHEMA_VERSION)) insert_('SchemaMigrations', { id: Utilities.getUuid(), schemaVersion: SCHEMA_VERSION, appliedAt: new Date().toISOString(), notes: 'Customer X account, shipping agreements and adjustments' });
     var owner = configureCurrentUserAsOwner_();
     return { installed: true, spreadsheetName: ss.getName(), ownerEmail: owner && owner.email || '' };
   } finally { lock.releaseLock(); }
 }
 
 function configureCurrentUserAsOwner() { return configureCurrentUserAsOwner_(); }
+function requireSpreadsheetOwner_(){var email=String(Session.getEffectiveUser().getEmail()||'').trim().toLowerCase();var owner=String(PropertiesService.getScriptProperties().getProperty('INITIAL_OWNER_EMAIL')||'').trim().toLowerCase();if(!email||!owner||email!==owner)throw apiError_('OWNER_REQUIRED','เฉพาะ Owner ของระบบเท่านั้น');return email;}
+function migrateSchemaV2ByOwner(){requireSpreadsheetOwner_();var lock=LockService.getScriptLock();lock.waitLock(30000);try{var ss=spreadsheet_();Object.keys(TABLES).forEach(function(name){ensureSheet_(ss,name,TABLES[name]);});seedSettings_();PropertiesService.getScriptProperties().setProperty('SCHEMA_VERSION',String(SCHEMA_VERSION));if(!findOne_('SchemaMigrations','schemaVersion',SCHEMA_VERSION))insert_('SchemaMigrations',{id:Utilities.getUuid(),schemaVersion:SCHEMA_VERSION,appliedAt:new Date().toISOString(),notes:'Customer X account, shipping agreements and adjustments'});return{installed:true,schemaVersion:SCHEMA_VERSION};}finally{lock.releaseLock();}}
+function addAdministratorByOwner(email,displayName){var ownerEmail=requireSpreadsheetOwner_();var normalized=normalizeEmail_(email);var user=findOne_('Users','email',normalized);var before=user;if(!user)user=insert_('Users',{email:normalized,displayName:String(displayName||normalized.split('@')[0]).trim(),role:'ADMIN',status:'ACTIVE',locale:'th',pointsBalance:0,xAccount:''});else if(user.role!=='OWNER')user=update_('Users',user.id,{role:'ADMIN',status:'ACTIVE',displayName:String(displayName||user.displayName||normalized.split('@')[0]).trim()});var owner=findOne_('Users','email',ownerEmail);audit_(owner&&owner.id||'OWNER','ADD_ADMIN_FROM_SHEET','Users',user.id,before,user);return{email:user.email,role:user.role,status:user.status};}
+function addAdministratorFromPrompt(){requireSpreadsheetOwner_();var ui=SpreadsheetApp.getUi();var answer=ui.prompt('เพิ่มผู้ดูแล','กรอกอีเมลผู้ดูแล',ui.ButtonSet.OK_CANCEL);if(answer.getSelectedButton()!==ui.Button.OK)return;var result=addAdministratorByOwner(answer.getResponseText(),'');ui.alert('เพิ่ม '+result.email+' เป็น Admin แล้ว');}
 function configureCurrentUserAsOwner_() {
   var email = String(Session.getEffectiveUser().getEmail() || '').trim().toLowerCase();
   if (!email) throw apiError_('OWNER_EMAIL_UNAVAILABLE', 'ไม่พบอีเมลของบัญชีที่รันสคริปต์ กรุณาตั้ง Script Property INITIAL_OWNER_EMAIL');
@@ -108,7 +112,7 @@ function deleteRow_(name, row) { sheet_(name).deleteRow(row); }
 function setting_(key, fallback) { var record = findOne_('Settings', 'key', key); if (!record) return fallback; try { return JSON.parse(record.value); } catch (_) { return record.value; } }
 function setSetting_(key, value) { var record = findOne_('Settings', 'key', key); var payload = typeof value === 'string' ? value : JSON.stringify(value); return record ? update_('Settings', record.id, { value: payload }) : insert_('Settings', { id: key, key: key, value: payload }); }
 function seedSettings_() {
-  var defaults = { storeNameTh: 'ร้านของฉัน', storeNameEn: 'My Shop', primaryColor: '#6d28d9', defaultTheme: 'system', allowUserTheme: true, pointsEnabled: true, reviewsEnabled: true, favoritesEnabled: true, reservationMinutes: 20, currency: 'THB', shippingFee: 50, shippingMode: 'CART', cartShippingFee: 50, pointsPerBaht: 10, minimumRedeemPoints: 100, maxRedeemPercent: 20, loaderKickerTh: 'ยินดีต้อนรับสู่', loaderKickerEn: 'Welcome to', loaderTitleTh: '', loaderTitleEn: '', loaderMessageTh: 'กำลังจัดชั้นสินค้าให้คุณ', loaderMessageEn: 'Curating the shelves for you', loaderLogoUrl: '' };
+  var defaults = { storeNameTh: 'ร้านของฉัน', storeNameEn: 'My Shop', primaryColor: '#6d28d9', defaultTheme: 'system', allowUserTheme: true, pointsEnabled: true, reviewsEnabled: true, favoritesEnabled: true, reservationMinutes: 20, currency: 'THB', shippingFee: 50, shippingMode: 'CART', cartShippingFee: 50, shippingTermsTh: 'ค่าจัดส่งที่แสดงเป็นราคาตั้งต้น หากที่อยู่เป็นพื้นที่ห่างไกล พื้นที่ท่องเที่ยว หรือเกาะ ร้านจะแจ้งค่าส่งตามจริงเพิ่มเติมก่อนจัดส่ง', shippingTermsEn: 'Displayed shipping is the base rate. Remote, tourist, or island destinations may incur actual additional shipping before dispatch.', shippingTermsVersion: 1, remoteAreaTermsTh: 'พื้นที่ห่างไกล พื้นที่ท่องเที่ยว และเกาะ คิดค่าส่งเพิ่มตามจริง โดยแอดมินจะแจ้งยอดสุดท้าย', remoteAreaTermsEn: 'Remote, tourist, and island destinations are charged at actual cost; the admin will confirm the final amount.', lowStockThreshold: 3, pointsPerBaht: 10, minimumRedeemPoints: 100, maxRedeemPercent: 20, loaderKickerTh: 'ยินดีต้อนรับสู่', loaderKickerEn: 'Welcome to', loaderTitleTh: '', loaderTitleEn: '', loaderMessageTh: 'กำลังจัดชั้นสินค้าให้คุณ', loaderMessageEn: 'Curating the shelves for you', loaderLogoUrl: '' };
   Object.keys(defaults).forEach(function(key) { if (!findOne_('Settings', 'key', key)) setSetting_(key, defaults[key]); });
 }
 function seedReferenceData_() {

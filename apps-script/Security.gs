@@ -49,4 +49,4 @@ function requireSession_(token) {
 }
 function requireRole_(context, roles) { if (roles.indexOf(context.user.role) < 0) throw apiError_('FORBIDDEN', 'คุณไม่มีสิทธิ์ทำรายการนี้'); return context; }
 function requirePrivileged_(context) { if (!context.session.privilegedUntil || new Date(context.session.privilegedUntil).getTime() <= Date.now()) throw apiError_('REAUTH_REQUIRED', 'กรุณายืนยันตัวตนอีกครั้งก่อนเปลี่ยนการตั้งค่าสำคัญ'); return context; }
-function publicUser_(user) { return { id: user.id, email: user.email, displayName: user.displayName, role: user.role, locale: user.locale || 'th', pointsBalance: Number(user.pointsBalance || 0) }; }
+function publicUser_(user) { return { id: user.id, email: user.email, displayName: user.displayName, role: user.role, locale: user.locale || 'th', pointsBalance: Number(user.pointsBalance || 0), xAccount:user.xAccount||'' }; }

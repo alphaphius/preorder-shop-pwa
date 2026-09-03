@@ -45,4 +45,15 @@ describe('Apps Script contract', () => {
     expect(source).toContain("kind:'ORDER_CREATED'")
     expect(source).toContain("kind:'PAYMENT_SUBMITTED'")
   })
+  it('requires shipping agreement and supports safe shipping adjustments',()=>{
+    expect(source).toContain('SHIPPING_TERMS_REQUIRED')
+    expect(source).toContain('shippingTermsAcceptedAt')
+    expect(source).toContain('function adminSetShippingAdjustment_')
+    expect(source).toContain('SET_SHIPPING_ADJUSTMENT')
+  })
+  it('stores X accounts and emits low-stock events',()=>{
+    expect(source).toContain('xAccount')
+    expect(source).toContain("kind:'LOW_STOCK'")
+    expect(source).toContain('lowStockThreshold')
+  })
 })

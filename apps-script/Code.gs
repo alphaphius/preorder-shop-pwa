@@ -1,5 +1,5 @@
 var API_VERSION = '1.0.0';
-var SCHEMA_VERSION = 1;
+var SCHEMA_VERSION = 2;
 
 function doGet(e) {
   var requestId = Utilities.getUuid();
@@ -44,6 +44,7 @@ function route_(action, payload, token, requestId) {
   if (action === 'adminConfiguration') return adminConfiguration_(requireRole_(session, ['ADMIN', 'OWNER']));
   if (action === 'adminSaveSettings') return adminSaveSettings_(requireRole_(session, ['ADMIN', 'OWNER']), payload);
   if (action === 'adminAddAdmin') return adminAddAdmin_(session, payload);
+  if (action === 'adminSetShippingAdjustment') return adminSetShippingAdjustment_(requireRole_(session, ['ADMIN', 'OWNER']), payload);
   if (action === 'adminSaveProduct') return adminSaveProduct_(requireRole_(session, ['ADMIN', 'OWNER']), payload, requestId);
   if (action === 'adminSaveCategory') return adminSaveCategory_(requireRole_(session, ['ADMIN', 'OWNER']), payload);
   if (action === 'adminSaveAnnouncement') return adminSaveAnnouncement_(requireRole_(session, ['ADMIN', 'OWNER']), payload);
